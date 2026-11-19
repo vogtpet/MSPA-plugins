@@ -4,6 +4,15 @@ RMSPA plugin versions follow [Semantic Versioning](https://semver.org/) and
 are independent of the MSPA version. The MSPA version wrapped by a release is
 stored in `MSPA_VERSION`.
 
+## [2.2.5] - 2026-11-19
+
+### Fixed
+
+* The *Release notes* button in the update dialog opened an empty window
+  titled "rstudio" (a `target="_blank"` link in RStudio's viewer). It now uses
+  `browseURL()` like the guide and GuidosToolbox links. A test guards against
+  `target="_blank"` links in the application.
+
 ## [2.2.4] - 2026-11-19
 
 ### Fixed

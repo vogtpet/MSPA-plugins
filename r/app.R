@@ -389,8 +389,7 @@ server <- function(input, output, session) {
       p("The new version can be downloaded and unpacked next to the current installation."),
       easyClose = TRUE,
       footer = tagList(
-        tags$a(href = res$notes_url, target = "_blank",
-               class = "btn btn-default", "Release notes"),
+        actionButton("openReleaseNotes", "Release notes"),
         actionButton("doUpdate", "Download and install"),
         modalButton("Later")
       )
@@ -446,6 +445,12 @@ server <- function(input, output, session) {
         )
       ))
     }, 0.25)
+  })
+
+  observeEvent(input$openReleaseNotes, {
+    if (!is.null(state$update$notes_url)) {
+      utils::browseURL(state$update$notes_url)
+    }
   })
 
   observeEvent(input$openNewFolder, {

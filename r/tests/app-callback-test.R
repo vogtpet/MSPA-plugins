@@ -59,6 +59,8 @@ check("modal helpers pass the session",
       any(grepl("removeModal(session = session)", app_src, fixed = TRUE)))
 check("no bare removeModal() calls",
       !any(grepl("removeModal()", app_src, fixed = TRUE)))
+check("no target=_blank links (empty RStudio window)",
+      !any(grepl('target = "_blank"', app_src, fixed = TRUE)))
 
 testServer(app, {
   ## The job callback runs without a default reactive domain in a real session.
