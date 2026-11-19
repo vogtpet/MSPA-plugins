@@ -59,8 +59,9 @@ have a `CHANGELOG.md`.
 * [MSPA homepage](https://forest.jrc.ec.europa.eu/en/activities/lpa/mspa/)
 * [MSPAstandalone](https://github.com/vogtpet/MSPAstandalone) – source code and
   reference builds of the MSPA engine
-* [GuidosToolbox (GTB)](https://forest.jrc.ec.europa.eu/en/activities/lpa/gtb/)
-  and [GuidosToolbox Workbench (GWB)](https://forest.jrc.ec.europa.eu/en/activities/lpa/gwb/)
+* [GuidosToolbox (GTB)](https://forest.jrc.ec.europa.eu/en/activities/lpa/gtb/),
+  [GuidosToolbox Workbench (GWB)](https://forest.jrc.ec.europa.eu/en/activities/lpa/gwb/),
+  and [pyGuidos](https://pyguidos-d46552.pages.code.europa.eu/index.html)
 
 ## License
 
