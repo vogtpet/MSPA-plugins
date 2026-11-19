@@ -61,10 +61,17 @@ check("no bare removeModal() calls",
       !any(grepl("removeModal()", app_src, fixed = TRUE)))
 
 testServer(app, {
+  ## The job callback runs without a default reactive domain in a real session.
+  ## Run it that way here, so any reactive read inside the callback fails.
+  callback_error <- NULL
   wait_for <- function(condition, timeout = 5) {
     deadline <- Sys.time() + timeout
-    while (!isTRUE(condition()) && Sys.time() < deadline) {
-      later::run_now(0.2)
+    while (!isTRUE(condition()) && Sys.time() < deadline &&
+           is.null(callback_error)) {
+      tryCatch(
+        shiny::withReactiveDomain(NULL, later::run_now(0.2)),
+        error = function(e) callback_error <<- conditionMessage(e)
+      )
       session$flushReact()
     }
     isTRUE(condition())
@@ -84,6 +91,8 @@ testServer(app, {
   session$flushReact()
 
   check("callback completed", wait_for(function() !is.null(state$last)))
+  check("callback used no reactive values", is.null(callback_error),
+        callback_error %||% "")
   check("busy flag reset", identical(state$busy, FALSE))
   if (!is.null(state$last)) {
     check("output recorded", identical(basename(state$last$outfile), "stub.tif"))
@@ -96,7 +105,10 @@ testServer(app, {
   session$setInputs(btnStart = 2)
   session$flushReact()
   wait_for(function() identical(state$busy, FALSE))
-  check("failure path completed", identical(state$busy, FALSE) && is.null(state$last))
+  check("failure path completed",
+        identical(state$busy, FALSE) && is.null(state$last))
+  check("failure path used no reactive values", is.null(callback_error),
+        callback_error %||% "")
 })
 
 cat("\n")

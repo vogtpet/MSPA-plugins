@@ -13,7 +13,7 @@ it does not contain a separate MSPA implementation.
 
 | Plugin | Folder | Version | MSPA | Download |
 |--------|--------|---------|------|----------|
-| R / RStudio | [`r/`](r/) | 2.2.1 | 2.4 | [RMSPA-2.2.1.zip](https://github.com/vogtpet/MSPA-plugins/releases/download/r-v2.2.1/RMSPA-2.2.1.zip) |
+| R / RStudio | [`r/`](r/) | 2.2.2 | 2.4 | [RMSPA-2.2.2.zip](https://github.com/vogtpet/MSPA-plugins/releases/download/r-v2.2.2/RMSPA-2.2.2.zip) |
 | QGIS 3 | [`qgis3/`](qgis3/) | – | 2.4 | planned |
 | QGIS 4 | [`qgis4/`](qgis4/) | – | 2.4 | planned |
 | ArcGIS | [`arcgis/`](arcgis/) | – | 2.4 | planned |
@@ -36,7 +36,7 @@ when an archive is built.
 Every plugin publishes its current version in a plain text file, for example
 `r/VERSION`. The installed plugin reads that file from GitHub and offers the
 new release when the published version is higher than the installed one.
-Releases are published as tags with a plugin prefix, for example `r-v2.2.1`,
+Releases are published as tags with a plugin prefix, for example `r-v2.2.2`,
 and the archives are attached to the corresponding GitHub release.
 
 ## Repository layout
@@ -64,7 +64,7 @@ have a `CHANGELOG.md`.
 
 ## License
 
-MSPA and the plugins in this repository are free software: you can
+The plugins in this repository and MSPA are free software: you can
 redistribute them and/or modify them under the terms of the **GNU General
 Public License, version 3 or later** (GPL-3.0-or-later). See [LICENSE](LICENSE)
 for the full text.
@@ -73,8 +73,19 @@ This program is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 FOR A PARTICULAR PURPOSE.
 
-The release archives contain the MSPA binaries built by the European
-Commission's Joint Research Centre (GPL-3.0-or-later) and, on macOS,
-libdeflate (MIT) and Lerc (Apache-2.0). See
-[MSPAstandalone](https://github.com/vogtpet/MSPAstandalone#license) for the
-third-party notices.
+## Third-party components
+
+The release archives contain the MSPA binaries built and distributed by the
+European Commission's Joint Research Centre. They link the libraries listed in
+the [third-party components section of
+MSPAstandalone](https://github.com/vogtpet/MSPAstandalone#third-party-components);
+the upstream notices are retained there.
+
+The macOS archives additionally bundle two dynamic libraries:
+
+* libdeflate (MIT) – <https://github.com/ebiggers/libdeflate>
+* Lerc (Apache-2.0) – <https://github.com/Esri/lerc>
+
+The full license texts accompany every plugin (`licenses/` inside the release
+archives, for example [`r/licenses/`](r/licenses/)) and are described in
+[`r/THIRD-PARTY-NOTICES.md`](r/THIRD-PARTY-NOTICES.md).

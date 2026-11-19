@@ -163,13 +163,12 @@ ui <- fluidPage(
     style = panel_style,
     h5(strong("Help")),
     fluidRow(
-      column(6, a("Plugin guide", class = "btn btn-info",
-                  style = "width:100%; border-color:#112446;",
-                  href = "https://github.com/vogtpet/MSPA-plugins/blob/main/r/README.md",
-                  target = "_blank")),
-      column(6, a("MSPA guide", class = "btn btn-info",
-                  style = "width:100%; border-color:#112446;",
-                  href = "MSPA_Guide.pdf", target = "_blank"))
+      column(6, actionButton("openPluginGuide", "Plugin guide",
+                             style = paste("width:100%; background-color:#17a2b8;",
+                                           "border-color:#112446; color:white;"))),
+      column(6, actionButton("openMspaGuide", "MSPA guide",
+                             style = paste("width:100%; background-color:#17a2b8;",
+                                           "border-color:#112446; color:white;")))
     ),
     p(style = "margin-top:10px; margin-bottom:0;",
       actionLink("checkUpdate", "Check for updates"),
@@ -264,21 +263,23 @@ server <- function(input, output, session) {
   })
 
   ## ---- processing ----------------------------------------------------------
-  run_job <- function(file, outdir) {
+  ## run_job() is called from a later::later() callback. Reactive values cannot
+  ## be read there, so the observer below snapshots the inputs in `job`.
+  run_job <- function(job) {
     on.exit(state$busy <- FALSE, add = TRUE)
 
     res <- tryCatch(
       mspa_process(
-        input = file$datapath,
-        outdir = outdir,
-        graphfg = as.integer(input$fgconn),
-        eew = as.integer(input$edgewidth),
-        transition = as.integer(input$transition),
-        internal = as.integer(input$intext),
-        encoding = input$encoding,
-        binary = runtime$binary,
-        input_name = file$name,
-        low_mem = isTRUE(input$lowmem)
+        input = job$datapath,
+        outdir = job$outdir,
+        graphfg = job$graphfg,
+        eew = job$eew,
+        transition = job$transition,
+        internal = job$internal,
+        encoding = job$encoding,
+        binary = job$binary,
+        input_name = job$name,
+        low_mem = job$low_mem
       ),
       error = function(e) list(ok = FALSE, message = conditionMessage(e))
     )
@@ -327,6 +328,19 @@ server <- function(input, output, session) {
       return()
     }
 
+    job <- list(
+      datapath = file$datapath,
+      name = file$name,
+      outdir = outdir,
+      graphfg = as.integer(input$fgconn),
+      eew = as.integer(input$edgewidth),
+      transition = as.integer(input$transition),
+      internal = as.integer(input$intext),
+      encoding = input$encoding,
+      binary = runtime$binary,
+      low_mem = isTRUE(input$lowmem)
+    )
+
     state$busy <- TRUE
     show_modal(modalDialog(
       title = NULL,
@@ -336,7 +350,7 @@ server <- function(input, output, session) {
       footer = NULL,
       easyClose = FALSE
     ))
-    later::later(function() run_job(file, outdir), 0.25)
+    later::later(function() run_job(job), 0.25)
   })
 
   observeEvent(input$openOutFolder, {
@@ -439,6 +453,25 @@ server <- function(input, output, session) {
   })
 
   observeEvent(input$quitApp, shiny::stopApp())
+
+  ## Open links in the system browser. Plain <a target="_blank"> links make
+  ## RStudio's viewer open an empty window titled "rstudio".
+  app_url <- function(file) {
+    client <- session$clientData
+    protocol <- sub(":+$", "", client$url_protocol %||% "http")
+    host <- client$url_hostname %||% "127.0.0.1"
+    port <- client$url_port %||% ""
+    if (nzchar(port)) host <- paste0(host, ":", port)
+    sprintf("%s://%s/%s", protocol, host, file)
+  }
+
+  observeEvent(input$openPluginGuide, {
+    utils::browseURL("https://github.com/vogtpet/MSPA-plugins/blob/main/r/README.md")
+  })
+
+  observeEvent(input$openMspaGuide, {
+    utils::browseURL(app_url("MSPA_Guide.pdf"))
+  })
 
   observeEvent(input$openGtb, {
     utils::browseURL("https://forest.jrc.ec.europa.eu/en/activities/lpa/gtb")

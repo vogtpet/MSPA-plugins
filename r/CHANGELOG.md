@@ -4,6 +4,25 @@ RMSPA plugin versions follow [Semantic Versioning](https://semver.org/) and
 are independent of the MSPA version. The MSPA version wrapped by a release is
 stored in `MSPA_VERSION`.
 
+## [2.2.2] - 2026-11-19
+
+### Fixed
+
+* Processing failed with `Can't access reactive value 'encoding' outside of
+  reactive consumer`: the job callback read `input$...` after the reactive
+  domain had ended. The parameters are now captured before the job starts.
+* The *Plugin guide* and *MSPA guide* buttons opened an empty window titled
+  "rstudio" in RStudio. They now open the system browser via `browseURL()`,
+  like the GuidosToolbox link.
+* The release archive now contains the license text (`LICENSE`), the
+  third-party notices (`THIRD-PARTY-NOTICES.md`) and the license texts of the
+  bundled macOS libraries (`licenses/`).
+
+### Changed
+
+* The license section follows the wording of MSPAstandalone
+  (GPL-3.0-or-later) and a third-party components section was added.
+
 ## [2.2.1] - 2026-11-19
 
 ### Fixed
