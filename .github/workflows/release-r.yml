@@ -46,6 +46,9 @@ jobs:
         if: runner.os != 'macOS'
         run: Rscript scripts/smoke-test.R
 
+      - name: Update installer test
+        run: Rscript tests/update-test.R
+
       - name: Smoke test (macOS, advisory)
         if: runner.os == 'macOS'
         continue-on-error: true

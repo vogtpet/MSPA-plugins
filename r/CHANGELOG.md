@@ -4,6 +4,17 @@ RMSPA plugin versions follow [Semantic Versioning](https://semver.org/) and
 are independent of the MSPA version. The MSPA version wrapped by a release is
 stored in `MSPA_VERSION`.
 
+## [2.2.3] - 2026-11-19
+
+### Fixed
+
+* The update installer failed with "The update could not be moved to its
+  destination" when the temporary directory is on a different filesystem (for
+  example tmpfs `/tmp` on Linux). The archive is now unpacked next to the
+  installation, and the copy fallback creates the destination folder before
+  copying (R's `file.copy()` does not create a missing destination).
+* Added a regression test for the installer (`tests/update-test.R`), run in CI.
+
 ## [2.2.2] - 2026-11-19
 
 ### Fixed

@@ -120,8 +120,7 @@ install_update <- function(version, app_dir, dest_root = NULL) {
   }
 
   zipfile <- tempfile(fileext = ".zip")
-  stage <- tempfile("rmspa-update-")
-  on.exit(unlink(c(zipfile, stage), recursive = TRUE), add = TRUE)
+  on.exit(unlink(zipfile), add = TRUE)
 
   old <- getOption("timeout")
   options(timeout = 600)
@@ -141,7 +140,15 @@ install_update <- function(version, app_dir, dest_root = NULL) {
     stop("The update archive does not contain a VERSION file.")
   }
 
-  dir.create(stage)
+  ## Unpack next to the destination, so that the new folder can be moved into
+  ## place with a rename even when tempdir() is on another filesystem (for
+  ## example tmpfs /tmp on Linux).
+  stage <- tempfile(pattern = ".rmspa-update-", tmpdir = dest_root)
+  if (!dir.create(stage, showWarnings = FALSE)) {
+    stop(sprintf("Could not create a staging directory:\n  %s", dest_root))
+  }
+  on.exit(unlink(stage, recursive = TRUE, force = TRUE), add = TRUE)
+
   utils::unzip(zipfile, exdir = stage)
 
   root <- file.path(stage, "RMSPA")
@@ -160,8 +167,27 @@ install_update <- function(version, app_dir, dest_root = NULL) {
 
   moved <- suppressWarnings(file.rename(root, dest))
   if (!isTRUE(moved)) {
-    if (!isTRUE(suppressWarnings(file.copy(root, dest, recursive = TRUE)))) {
-      stop("The update could not be moved to its destination.")
+    ## Fallback for filesystems that cannot rename a directory: create the
+    ## destination and copy its contents (file.copy() does not create `to`).
+    if (!dir.create(dest, showWarnings = FALSE)) {
+      stop(sprintf("The update could not be moved to its destination:\n  %s",
+                   dest))
+    }
+    entries <- list.files(root, all.files = TRUE, no.. = TRUE,
+                          full.names = TRUE)
+    warnings <- character()
+    ok <- withCallingHandlers(
+      file.copy(entries, dest, recursive = TRUE),
+      warning = function(w) {
+        warnings <<- c(warnings, conditionMessage(w))
+        invokeRestart("muffleWarning")
+      }
+    )
+    if (!all(ok)) {
+      stop(paste0("The update could not be moved to its destination:\n  ", dest,
+                  if (length(warnings) > 0L) {
+                    paste0("\n", paste(unique(warnings), collapse = "\n"))
+                  } else ""))
     }
   }
 

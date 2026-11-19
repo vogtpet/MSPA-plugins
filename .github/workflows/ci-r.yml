@@ -52,6 +52,9 @@ jobs:
         if: runner.os != 'macOS'
         run: Rscript scripts/smoke-test.R
 
+      - name: Update installer test
+        run: Rscript tests/update-test.R
+
       # The MSPA 2.4 macOS ARM binary currently declares macOS 27 as its
       # minimum version (see MSPAstandalone). Keep this advisory until the
       # upstream build uses a lower deployment target.
