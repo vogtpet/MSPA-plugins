@@ -162,9 +162,18 @@ mspa_runtime <- function(app_dir, expected_version = NULL) {
   out$binary <- binary
 
   if (!file.exists(binary)) {
+    hint <- ""
+    if (dir.exists(file.path(app_dir, ".git")) ||
+        !dir.exists(file.path(app_dir, "resources"))) {
+      hint <- paste0(
+        "\n\nThis looks like a source checkout: the MSPA binaries are not stored ",
+        "in the Git repository. Download them with\n",
+        "  ./scripts/fetch-binaries.sh\n",
+        "or install RMSPA from the official release archive.")
+    }
     out$detail <- sprintf(
-      "The MSPA binary for %s is missing:\n  %s\n\nReinstall RMSPA from the official release archive.",
-      mspa_target_label(target), binary
+      "The MSPA binary for %s is missing:\n  %s%s",
+      mspa_target_label(target), binary, hint
     )
     return(out)
   }

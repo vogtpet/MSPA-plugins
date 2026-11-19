@@ -26,6 +26,12 @@ macOS on Intel is no longer supported.
 
 ## Installation
 
+RMSPA is distributed as a **release archive**. The Git repository contains the
+sources only: the MSPA binaries are not committed, so an application started
+from a clone cannot find `resources/`. If you cloned the repository, run
+`./scripts/fetch-binaries.sh` (see [Development](#development)) before
+starting the app.
+
 1. Download `RMSPA-2.2.1.zip` from the
    [releases page](https://github.com/vogtpet/MSPA-plugins/releases) and verify
    it against `SHA256SUMS` if you wish.

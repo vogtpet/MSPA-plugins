@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-24.04, windows-latest, macos-latest]
 
     defaults:
       run:
@@ -29,8 +29,15 @@ jobs:
         with:
           use-public-rspm: true
 
+      - name: Install system libraries (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libgdal-dev libgeos-dev libproj-dev libsqlite3-dev libudunits2-dev
+
       - name: Install R packages
-        run: Rscript -e 'install.packages(c("terra", "shiny", "shinyFiles", "shinyjs", "later"))'
+        run: Rscript scripts/install-deps.R
 
       - name: Fetch MSPA binaries
         run: ./scripts/fetch-binaries.sh

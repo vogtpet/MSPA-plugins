@@ -18,6 +18,10 @@ it does not contain a separate MSPA implementation.
 | QGIS 4 | [`qgis4/`](qgis4/) | – | 2.4 | planned |
 | ArcGIS | [`arcgis/`](arcgis/) | – | 2.4 | planned |
 
+The installable archives are attached to the [releases](https://github.com/vogtpet/MSPA-plugins/releases).
+The repository itself contains the sources; the MSPA binaries are downloaded
+when an archive is built.
+
 ## Two version numbers
 
 * **MSPA version** – the version of the MSPA engine, currently 2.4. It is the
