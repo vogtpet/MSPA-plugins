@@ -38,6 +38,13 @@ mkdir -p "$stage/RMSPA"
 cp app.R VERSION MSPA_VERSION README.md CHANGELOG.md "$stage/RMSPA/"
 cp -R R www examples resources "$stage/RMSPA/"
 
+# Always package the current MSPA guide. Fall back to the copy in www/ when
+# the JRC server is unavailable (offline builds).
+if ! ./scripts/fetch-guide.sh "$stage/RMSPA/www/MSPA_Guide.pdf"; then
+    echo "WARNING: could not download the current MSPA guide; using www/MSPA_Guide.pdf" >&2
+    cp www/MSPA_Guide.pdf "$stage/RMSPA/www/MSPA_Guide.pdf"
+fi
+
 find "$stage/RMSPA" -type d -exec chmod 755 {} +
 find "$stage/RMSPA/resources" -type f ! -name '*.dylib' ! -name '*.txt' \
      -exec chmod 755 {} +

@@ -8,7 +8,7 @@ analysis is done by MSPA itself.
 
 | | |
 |---|---|
-| **Plugin version** | 2.2.0 |
+| **Plugin version** | 2.2.1 |
 | **MSPA version** | 2.4 |
 | **Host** | R ≥ 4.0 (64-bit), RStudio recommended |
 
@@ -26,7 +26,7 @@ macOS on Intel is no longer supported.
 
 ## Installation
 
-1. Download `RMSPA-2.2.0.zip` from the
+1. Download `RMSPA-2.2.1.zip` from the
    [releases page](https://github.com/vogtpet/MSPA-plugins/releases) and verify
    it against `SHA256SUMS` if you wish.
 2. Extract the archive. You get a folder `RMSPA` containing `app.R`,
@@ -149,7 +149,7 @@ shows a message when a newer plugin version is available. You can also run
 the check manually with **Check for updates**. The new version is downloaded
 from the GitHub release, verified to contain the announced version and
 unpacked **next to** the current installation, for example
-`RMSPA-2.2.0/`. Close RMSPA, start `app.R` from the new folder, and delete the
+`RMSPA-2.2.1/`. Close RMSPA, start `app.R` from the new folder, and delete the
 old folder once the new version works. The current installation is never
 modified by an update.
 
@@ -194,10 +194,16 @@ in `www/MSPA_Guide.pdf`.
 
 ```sh
 cd r
-./scripts/fetch-binaries.sh     # MSPA binaries from the MSPAstandalone release
-Rscript scripts/smoke-test.R    # end-to-end test against reference.tif
-./scripts/build-release.sh      # dist/RMSPA-<version>.zip + SHA256SUMS
+./scripts/fetch-binaries.sh        # MSPA binaries from the MSPAstandalone release
+./scripts/fetch-guide.sh           # current MSPA_Guide.pdf from the JRC page
+Rscript scripts/smoke-test.R       # end-to-end test against reference.tif
+Rscript tests/app-callback-test.R  # server callback regression test
+./scripts/build-release.sh         # dist/RMSPA-<version>.zip + SHA256SUMS
 ```
+
+`build-release.sh` downloads the current `MSPA_Guide.pdf` from the JRC MSPA
+page for every archive and falls back to `www/MSPA_Guide.pdf` if the server is
+unavailable.
 
 The binaries are not stored in the repository; `fetch-binaries.sh` downloads
 the archives of the MSPA release named in `MSPA_VERSION`, verifies the

@@ -48,13 +48,15 @@ rmspa_fetch_version <- function(timeout = 5) {
   ## Bust the CDN cache for the plain-text version file. file:// and other
   ## local sources do not support a query string.
   if (grepl("^https?://", url)) url <- paste0(url, "?t=", as.integer(Sys.time()))
-  con <- tryCatch(url(url, open = "rt", encoding = "UTF-8"),
-                  error = function(e) NULL)
+  con <- suppressWarnings(tryCatch(url(url, open = "rt", encoding = "UTF-8"),
+                                   error = function(e) NULL))
   if (is.null(con)) return(NULL)
-  on.exit(try(close(con), silent = TRUE), add = TRUE)
+  on.exit(suppressWarnings(try(close(con), silent = TRUE)), add = TRUE)
 
-  lines <- tryCatch(readLines(con, n = 1L, warn = FALSE),
-                    error = function(e) character())
+  ## A 404 (for example before the first release) or an offline machine only
+  ## warns here; the caller treats the empty result as "no information".
+  lines <- suppressWarnings(tryCatch(readLines(con, n = 1L, warn = FALSE),
+                                     error = function(e) character()))
   if (length(lines) == 0L) return(NULL)
   version <- trimws(sub("^\ufeff", "", lines[1]))
   if (!grepl("^[0-9]+(\\.[0-9]+)*$", version)) return(NULL)

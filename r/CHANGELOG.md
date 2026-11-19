@@ -4,6 +4,19 @@ RMSPA plugin versions follow [Semantic Versioning](https://semver.org/) and
 are independent of the MSPA version. The MSPA version wrapped by a release is
 stored in `MSPA_VERSION`.
 
+## [2.2.1] - 2026-11-19
+
+### Fixed
+
+* Finishing a job crashed the application with
+  `Error in session$sendModal("remove", NULL): attempt to apply non-function`.
+  The job runs in a `later::later()` callback, where no default reactive domain
+  is active; `removeModal()`, `showModal()` and `shinyjs` now receive the
+  session explicitly (or are replaced by a reactive busy flag).
+* The startup version check no longer prints warnings when the cache file does
+  not exist yet or when the version file is unavailable (for example a 404
+  before the first release).
+
 ## [2.2.0] - 2026-11-19
 
 First release from the `MSPA-plugins` repository. Based on the 2.1 plugin

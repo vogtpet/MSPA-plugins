@@ -11,8 +11,13 @@
 ## ---------------------------------------------------------------------------
 
 ## Locate the application folder. This works for RStudio's "Run App", for
-## shiny::runApp("path/to/RMSPA") and for Rscript path/to/app.R.
+## shiny::runApp("path/to/RMSPA") and for Rscript path/to/app.R. The option
+## rmspa.app_dir is used by the tests in tests/.
 app_dir <- local({
+  option_dir <- getOption("rmspa.app_dir", "")
+  if (is.character(option_dir) && length(option_dir) == 1L && nzchar(option_dir)) {
+    return(normalizePath(option_dir, mustWork = FALSE))
+  }
   args <- commandArgs(trailingOnly = FALSE)
   file_arg <- sub("^--file=", "", grep("^--file=", args, value = TRUE))
   if (length(file_arg) == 1L && nzchar(file_arg)) {
@@ -182,7 +187,13 @@ ui <- fluidPage(
 ## ---- server ----------------------------------------------------------------
 server <- function(input, output, session) {
 
-  state <- reactiveValues(info = NULL, last = NULL, update = NULL, new_app = NULL)
+  state <- reactiveValues(info = NULL, last = NULL, update = NULL,
+                          new_app = NULL, busy = FALSE)
+
+  ## The modals are also opened and closed from later::later() callbacks, where
+  ## no default reactive domain is active. Pass the session explicitly.
+  show_modal <- function(ui) showModal(ui, session = session)
+  hide_modal <- function() removeModal(session = session)
 
   volumes <- c(Home = path.expand("~"), shinyFiles::getVolumes()())
 
@@ -222,11 +233,8 @@ server <- function(input, output, session) {
   })
 
   observe({
-    if (isTRUE(runtime$ok) && isTRUE(state$info$ok)) {
-      shinyjs::enable("btnStart")
-    } else {
-      shinyjs::disable("btnStart")
-    }
+    ready <- isTRUE(runtime$ok) && isTRUE(state$info$ok) && !isTRUE(state$busy)
+    if (ready) shinyjs::enable("btnStart") else shinyjs::disable("btnStart")
   })
 
   output$inputInfo <- renderUI({
@@ -257,6 +265,8 @@ server <- function(input, output, session) {
 
   ## ---- processing ----------------------------------------------------------
   run_job <- function(file, outdir) {
+    on.exit(state$busy <- FALSE, add = TRUE)
+
     res <- tryCatch(
       mspa_process(
         input = file$datapath,
@@ -273,11 +283,10 @@ server <- function(input, output, session) {
       error = function(e) list(ok = FALSE, message = conditionMessage(e))
     )
 
-    removeModal()
+    hide_modal()
 
     if (!isTRUE(res$ok)) {
-      shinyjs::enable("btnStart")
-      showModal(modalDialog(
+      show_modal(modalDialog(
         title = "MSPA failed",
         div(style = "white-space:pre-wrap;", res$message),
         easyClose = TRUE,
@@ -286,9 +295,8 @@ server <- function(input, output, session) {
       return()
     }
 
-    shinyjs::enable("btnStart")
     state$last <- res
-    showModal(modalDialog(
+    show_modal(modalDialog(
       title = "MSPA finished",
       p("The classified image was saved to:"),
       tags$code(res$outfile),
@@ -303,23 +311,24 @@ server <- function(input, output, session) {
 
   observeEvent(input$btnStart, {
     file <- input$btnSelectFile
-    if (!isTRUE(runtime$ok) || is.null(file) || !isTRUE(state$info$ok)) return()
+    if (!isTRUE(runtime$ok) || is.null(file) || !isTRUE(state$info$ok) ||
+        isTRUE(state$busy)) return()
 
     selected <- input$selectFolder
     if (is.null(selected) || is.integer(selected)) {
-      showModal(modalDialog("Please select a folder for the result.",
-                            easyClose = TRUE, footer = modalButton("Close")))
+      show_modal(modalDialog("Please select a folder for the result.",
+                             easyClose = TRUE, footer = modalButton("Close")))
       return()
     }
     outdir <- shinyFiles::parseDirPath(volumes, selected)
     if (!nzchar(outdir)) {
-      showModal(modalDialog("Please select a folder for the result.",
-                            easyClose = TRUE, footer = modalButton("Close")))
+      show_modal(modalDialog("Please select a folder for the result.",
+                             easyClose = TRUE, footer = modalButton("Close")))
       return()
     }
 
-    shinyjs::disable("btnStart")
-    showModal(modalDialog(
+    state$busy <- TRUE
+    show_modal(modalDialog(
       title = NULL,
       div(class = "text-center",
           h4("Processing image ..."),
@@ -345,22 +354,22 @@ server <- function(input, output, session) {
 
     if (!isTRUE(res$ok)) {
       if (manual) {
-        showModal(modalDialog("Update check", res$message,
-                              easyClose = TRUE, footer = modalButton("Close")))
+        show_modal(modalDialog("Update check", res$message,
+                               easyClose = TRUE, footer = modalButton("Close")))
       }
       return()
     }
 
     if (!isTRUE(res$available)) {
       if (manual) {
-        showModal(modalDialog("No update available", res$message,
-                              easyClose = TRUE, footer = modalButton("Close")))
+        show_modal(modalDialog("No update available", res$message,
+                               easyClose = TRUE, footer = modalButton("Close")))
       }
       return()
     }
 
     state$update <- res
-    showModal(modalDialog(
+    show_modal(modalDialog(
       title = "Update available",
       p(res$message),
       p("The new version can be downloaded and unpacked next to the current installation."),
@@ -384,7 +393,7 @@ server <- function(input, output, session) {
     update <- state$update
     if (is.null(update)) return()
 
-    showModal(modalDialog(
+    show_modal(modalDialog(
       title = NULL,
       div(class = "text-center",
           h4(sprintf("Downloading RMSPA %s ...", update$latest)),
@@ -396,10 +405,10 @@ server <- function(input, output, session) {
     later::later(function() {
       path <- tryCatch(install_update(update$latest, app_dir),
                        error = function(e) e)
-      removeModal()
+      hide_modal()
 
       if (inherits(path, "error")) {
-        showModal(modalDialog(
+        show_modal(modalDialog(
           title = "Update failed",
           div(style = "white-space:pre-wrap;", conditionMessage(path)),
           easyClose = TRUE, footer = modalButton("Close")
@@ -408,7 +417,7 @@ server <- function(input, output, session) {
       }
 
       state$new_app <- path
-      showModal(modalDialog(
+      show_modal(modalDialog(
         title = "Update installed",
         p("The new version was unpacked to:"),
         tags$code(path),
