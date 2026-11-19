@@ -1,0 +1,14 @@
+# Build output
+r/dist/
+r/resources/
+*.zip
+
+# R session files
+.Rhistory
+.RData
+.Rproj.user/
+.Renviron
+
+# Operating system files
+.DS_Store
+Thumbs.db

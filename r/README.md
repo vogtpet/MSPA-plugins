@@ -1,0 +1,222 @@
+# RMSPA – MSPA for R and RStudio
+
+RMSPA is a Shiny application that runs **MSPA** (Morphological Spatial Pattern
+Analysis) on a single-band GeoTIFF and writes a classified GeoTIFF. It is a
+thin wrapper around the MSPA command line tool from
+[MSPAstandalone](https://github.com/vogtpet/MSPAstandalone); all pattern
+analysis is done by MSPA itself.
+
+| | |
+|---|---|
+| **Plugin version** | 2.2.0 |
+| **MSPA version** | 2.4 |
+| **Host** | R ≥ 4.0 (64-bit), RStudio recommended |
+
+## Supported platforms
+
+| Operating system | Architecture | Bundled MSPA binary |
+|---|---|---|
+| Linux | x86_64 (glibc ≥ 2.31) | `mspa_linux` |
+| Linux | aarch64 | `mspa_linux_ARM` |
+| macOS | Apple Silicon | `mspa_macOS_ARM` |
+| Windows | x86_64 | `mspa_win64.exe` |
+| Windows | ARM64 | `mspa_win64_ARM.exe` |
+
+macOS on Intel is no longer supported.
+
+## Installation
+
+1. Download `RMSPA-2.2.0.zip` from the
+   [releases page](https://github.com/vogtpet/MSPA-plugins/releases) and verify
+   it against `SHA256SUMS` if you wish.
+2. Extract the archive. You get a folder `RMSPA` containing `app.R`,
+   `VERSION`, the `R/` sources, the manual `www/MSPA_Guide.pdf`, an example
+   image in `examples/` and the MSPA binaries in `resources/`.
+3. Start RStudio and open `app.R`.
+4. Click **Run App** (or run `shiny::runApp("path/to/RMSPA")`).
+
+The first start installs the required R packages (`shiny`, `shinyFiles`,
+`shinyjs`, `terra`, `later`) from CRAN if they are missing. This can take a few
+minutes because `terra` may need to be compiled, in particular on Linux. To
+install them in advance:
+
+```r
+install.packages(c("shiny", "shinyFiles", "shinyjs", "terra", "later"))
+```
+
+On Ubuntu/Debian the installation of `terra` is much faster with binary
+packages from Posit Package Manager:
+
+```r
+options(repos = c(P3M = "https://packagemanager.posit.co/cran/__linux__/jammy/latest",
+                  CRAN = "https://cloud.r-project.org"))
+```
+
+A GDAL installation is **not** required to run RMSPA; `terra` ships its own
+GDAL. GDAL development files are only needed if `terra` has to be compiled
+from source.
+
+You can also run the application from a terminal, without RStudio:
+
+```sh
+Rscript path/to/RMSPA/app.R
+```
+
+## Usage
+
+### Step 1 – input image
+
+Select a single-band 8-bit GeoTIFF with a coordinate reference system.
+
+MSPA uses the following pixel values:
+
+| Value | Meaning |
+|---|---|
+| 0 | Missing (optional) |
+| 1 | Background (mandatory) |
+| 2 | Foreground (mandatory) |
+
+This is the encoding used by GuidosToolbox. If your mask uses the common
+`0 = background, 1 = foreground` convention, select **Binary mask (0/1)** as
+the input encoding; RMSPA recodes the image to the GTB convention before
+processing. The original file is never modified.
+
+The interface reports the image size, data type, projection and the pixel
+values it found, and explains why an image cannot be processed. All
+intermediate files are written to a temporary directory, so the folder
+`RMSPA` can be read-only.
+
+### Step 2 – MSPA parameters
+
+| Parameter | Meaning | Default |
+|---|---|---|
+| `FGconn` | Foreground connectivity (4 or 8) | 8 |
+| `EdgeWidth` | Effective edge width in pixels (1–5) | 1 |
+| `Transition` | Show transition pixels (1) or closed boundaries (0) | 1 |
+| `Internal` | Include internal structures and openings (1/0) | 1 |
+| Low memory | Pass `-disk` to MSPA; automatic above 65 million pixels | off |
+
+The parameters are documented in `www/MSPA_Guide.pdf` and on the
+[MSPA homepage](https://forest.jrc.ec.europa.eu/en/activities/lpa/mspa/).
+
+### Step 3 – process
+
+Select the output folder and click **Start**. Very large images (above
+400 million pixels) are rejected by the interface; use the MSPA standalone
+tool or GTB for those.
+
+## Output
+
+The result is saved as
+
+```
+<input name>_<FGconn>_<EdgeWidth>_<Transition>_<Internal>.tif
+```
+
+for example `forest_8_1_1_1.tif`. The georeference of the input image is
+restored, the LZW-compressed GeoTIFF keeps the MSPA colour table and the GTB
+metadata (`TIFFTAG_IMAGEDESCRIPTION=GTB_MSPA, ...`) so that GTB can load the
+MSPA parameters automatically. `NoData` is set to 255, a value MSPA does not
+use.
+
+Pixel values follow the MSPA colour code (MSPA guide, page 6):
+
+| Class | Colour (RGB) | Internal = 0 | Internal = 1 |
+|---|---|---|---|
+| Core | 0/200/0 | 17 | 17, 117 |
+| Islet | 160/60/0 | 9 | 9, 109 |
+| Perforation | 0/0/255 | 5 | 105 |
+| Edge | 0/0/0 | 3 | 3, 103 |
+| Loop | 255/255/0 | 65 | 65, 165 |
+| Loop in edge | 255/255/0 | 67 | 67, 167 |
+| Loop in perforation | 255/255/0 | 69 | 169 |
+| Bridge | 255/0/0 | 33 | 33, 133 |
+| Bridge in edge | 255/0/0 | 35 | 35, 135 |
+| Bridge in perforation | 255/0/0 | 37 | 137 |
+| Branch | 255/140/0 | 1 | 1, 101 |
+| Background | 220/220/220 | 0 | 0 |
+| Border-Opening | 194/194/194 | – | 220 |
+| Core-Opening | 136/136/136 | – | 100 |
+| No Data | 255/255/255 | 129 | 129 |
+
+With `Internal = 1` the pixel values of internal structures are offset by
+100 (for example 17 → 117).
+
+## Updates
+
+RMSPA checks `r/VERSION` in the `MSPA-plugins` repository once per day and
+shows a message when a newer plugin version is available. You can also run
+the check manually with **Check for updates**. The new version is downloaded
+from the GitHub release, verified to contain the announced version and
+unpacked **next to** the current installation, for example
+`RMSPA-2.2.0/`. Close RMSPA, start `app.R` from the new folder, and delete the
+old folder once the new version works. The current installation is never
+modified by an update.
+
+## Troubleshooting
+
+**"MSPA is not available on this system."**
+The message in the interface contains the details. Common reasons are a
+missing file, a missing execute permission (RMSPA sets it automatically) or a
+blocked executable.
+
+**macOS: "cannot be opened" or the binary does not start**
+Downloaded archives are quarantined by macOS. Remove the flag from the
+extracted folder:
+
+```sh
+xattr -dr com.apple.quarantine /path/to/RMSPA
+```
+
+The macOS ARM build of MSPA 2.4 currently declares macOS 27 as its minimum
+version. On older macOS versions the MSPA binary cannot be started; a rebuild
+with a lower deployment target is tracked in MSPAstandalone.
+
+**Windows: SmartScreen or antivirus warnings**
+The MSPA executable is not code signed. Verify the SHA-256 checksum of the
+archive and allow the file if you trust the source. The Visual C++ 2013
+runtime is no longer required; the old GDAL bundle was removed in 2.2.0.
+
+**Linux: `terra` does not install**
+Either install the GDAL development packages (`libgdal-dev`, `libproj-dev`,
+`libgeos-dev`) or use the Posit Package Manager binaries shown above.
+
+**The output looks grey or white instead of the MSPA colours**
+The colour table is stored in the GeoTIFF. Some GIS programs ignore it; use
+"unique values" symbology with the MSPA colours from the table above, or use
+GTB to display the result.
+
+**Values in the output**
+The full class encoding, including the internal offsets, is listed above and
+in `www/MSPA_Guide.pdf`.
+
+## Development
+
+```sh
+cd r
+./scripts/fetch-binaries.sh     # MSPA binaries from the MSPAstandalone release
+Rscript scripts/smoke-test.R    # end-to-end test against reference.tif
+./scripts/build-release.sh      # dist/RMSPA-<version>.zip + SHA256SUMS
+```
+
+The binaries are not stored in the repository; `fetch-binaries.sh` downloads
+the archives of the MSPA release named in `MSPA_VERSION`, verifies the
+upstream checksums and records the provenance in `resources/BINARIES.txt`.
+`resources/` is ignored by git.
+
+On a platform without a bundled binary (for example an Intel Mac) pass a
+development build with `Rscript scripts/smoke-test.R --binary /path/to/mspa`.
+
+The smoke test runs the complete pipeline on `examples/input.tif` and compares
+the result with the reference output of MSPAstandalone. It also checks the
+non-default parameters, both input encodings, the NoData value, the restored
+projection and the GTB metadata.
+
+Releases are built by GitHub Actions when a tag `r-v<version>` is pushed; the
+tag must match `VERSION`.
+
+## Licence
+
+GPL-3.0, see [../LICENSE](../LICENSE). MSPA is developed and distributed by
+the European Commission's Joint Research Centre; see the disclaimer in the
+MSPA guide.
