@@ -227,8 +227,17 @@ projection and the GTB metadata.
 Releases are built by GitHub Actions when a tag `r-v<version>` is pushed; the
 tag must match `VERSION`.
 
-## Licence
+## License
 
-GPL-3.0, see [../LICENSE](../LICENSE). MSPA is developed and distributed by
-the European Commission's Joint Research Centre; see the disclaimer in the
-MSPA guide.
+RMSPA is free software: you can redistribute it and/or modify it under the
+terms of the **GNU General Public License, version 3 or later**
+(GPL-3.0-or-later). See [../LICENSE](../LICENSE) for the full text.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.
+
+The bundled MSPA binaries are built and distributed by the European
+Commission's Joint Research Centre under the same licence. See
+[MSPAstandalone](https://github.com/vogtpet/MSPAstandalone#license) for the
+third-party notices.

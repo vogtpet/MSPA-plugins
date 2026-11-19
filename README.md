@@ -62,12 +62,19 @@ have a `CHANGELOG.md`.
 * [GuidosToolbox (GTB)](https://forest.jrc.ec.europa.eu/en/activities/lpa/gtb/)
   and [GuidosToolbox Workbench (GWB)](https://forest.jrc.ec.europa.eu/en/activities/lpa/gwb/)
 
-## Licence
+## License
 
-The plugin code in this repository is licensed under the
-[GNU General Public License v3.0](LICENSE), the licence of MSPA.
+MSPA and the plugins in this repository are free software: you can
+redistribute them and/or modify them under the terms of the **GNU General
+Public License, version 3 or later** (GPL-3.0-or-later). See [LICENSE](LICENSE)
+for the full text.
 
-The MSPA binaries bundled with the releases are built and distributed by the
-European Commission's Joint Research Centre. Please note the MSPA disclaimer:
-the software is made available for non-commercial purposes; for commercial use
-contact the JRC.
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.
+
+The release archives contain the MSPA binaries built by the European
+Commission's Joint Research Centre (GPL-3.0-or-later) and, on macOS,
+libdeflate (MIT) and Lerc (Apache-2.0). See
+[MSPAstandalone](https://github.com/vogtpet/MSPAstandalone#license) for the
+third-party notices.
