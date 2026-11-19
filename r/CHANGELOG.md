@@ -4,6 +4,17 @@ RMSPA plugin versions follow [Semantic Versioning](https://semver.org/) and
 are independent of the MSPA version. The MSPA version wrapped by a release is
 stored in `MSPA_VERSION`.
 
+## [2.2.4] - 2026-11-19
+
+### Fixed
+
+* The update installer now chooses the destination by actually creating the
+  staging directory instead of relying on `file.access()`, falling back to the
+  per-user data directory (`tools::R_user_dir()`) and then to the temporary
+  directory. This covers read-only parents (for example an installation in
+  `/opt`, or an app placed directly in `$HOME`) and file systems where the
+  access check is unreliable. `tests/update-test.R` covers the fallback.
+
 ## [2.2.3] - 2026-11-19
 
 ### Fixed

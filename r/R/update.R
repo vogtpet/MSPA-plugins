@@ -108,16 +108,41 @@ check_for_update <- function(current, refresh = FALSE, max_age = 24 * 3600) {
 install_update <- function(version, app_dir, dest_root = NULL) {
   stopifnot(nzchar(version), dir.exists(app_dir))
 
-  if (is.null(dest_root)) dest_root <- dirname(normalizePath(app_dir))
-  dir.create(dest_root, recursive = TRUE, showWarnings = FALSE)
-  if (file.access(dest_root, 2L) != 0L) {
-    dest_root <- tryCatch(tools::R_user_dir("MSPA-plugins", "data"),
-                          error = function(e) file.path(path.expand("~"), "MSPA-plugins"))
-    dir.create(dest_root, recursive = TRUE, showWarnings = FALSE)
-    if (file.access(dest_root, 2L) != 0L) {
-      stop("No writable location found for the update.")
+  ## Choose the destination by actually creating the staging directory. Prefer
+  ## the parent of the running installation, then the per-user data directory
+  ## (read-only installations such as /opt or an app placed directly in $HOME),
+  ## then the temporary directory.
+  candidates <- character()
+  if (!is.null(dest_root)) {
+    candidates <- c(candidates, dest_root)
+  } else {
+    candidates <- c(candidates, dirname(normalizePath(app_dir)))
+  }
+  candidates <- c(
+    candidates,
+    tryCatch(tools::R_user_dir("MSPA-plugins", "data"),
+             error = function(e) file.path(path.expand("~"), "MSPA-plugins")),
+    tempdir()
+  )
+  candidates <- unique(normalizePath(candidates, mustWork = FALSE))
+
+  stage <- NULL
+  for (candidate in candidates) {
+    if (!dir.exists(candidate)) {
+      dir.create(candidate, recursive = TRUE, showWarnings = FALSE)
+    }
+    if (!dir.exists(candidate)) next
+    probe <- tempfile(pattern = ".rmspa-update-", tmpdir = candidate)
+    if (dir.create(probe, showWarnings = FALSE)) {
+      stage <- probe
+      dest_root <- candidate
+      break
     }
   }
+  if (is.null(stage)) {
+    stop("No writable location found for the update.")
+  }
+  on.exit(unlink(stage, recursive = TRUE, force = TRUE), add = TRUE)
 
   zipfile <- tempfile(fileext = ".zip")
   on.exit(unlink(zipfile), add = TRUE)
@@ -140,15 +165,8 @@ install_update <- function(version, app_dir, dest_root = NULL) {
     stop("The update archive does not contain a VERSION file.")
   }
 
-  ## Unpack next to the destination, so that the new folder can be moved into
-  ## place with a rename even when tempdir() is on another filesystem (for
-  ## example tmpfs /tmp on Linux).
-  stage <- tempfile(pattern = ".rmspa-update-", tmpdir = dest_root)
-  if (!dir.create(stage, showWarnings = FALSE)) {
-    stop(sprintf("Could not create a staging directory:\n  %s", dest_root))
-  }
-  on.exit(unlink(stage, recursive = TRUE, force = TRUE), add = TRUE)
-
+  ## Unpack into the staging directory next to the destination, so that the new
+  ## folder can be moved into place with a rename.
   utils::unzip(zipfile, exdir = stage)
 
   root <- file.path(stage, "RMSPA")

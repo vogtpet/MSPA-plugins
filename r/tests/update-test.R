@@ -74,6 +74,16 @@ check("fallback copied VERSION",
 check("fallback copied app.R",
       file.exists(file.path(p2, "app.R")))
 
+## 3. Unwritable destination (a file, so no directory can be created there):
+##    the installer must fall back to a writable location.
+env$file.rename <- base::file.rename
+not_a_dir <- file.path(tmp, "not-a-directory")
+writeLines("x", not_a_dir)
+p3 <- env$install_update("9.9.9", app_dir, dest_root = not_a_dir)
+check("fell back to a writable location",
+      dir.exists(p3) && file.exists(file.path(p3, "VERSION")), p3)
+if (dir.exists(p3)) unlink(p3, recursive = TRUE, force = TRUE)
+
 cat("\n")
 if (failed) {
   cat("FAILED\n")
