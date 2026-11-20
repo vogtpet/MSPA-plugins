@@ -388,6 +388,10 @@ server <- function(input, output, session) {
   })
 
   start_job <- function(job) {
+    ## Force the argument here: start_job() only uses `job` inside the
+    ## later::later() closure, so without this the (possibly reactive) promise
+    ## would be evaluated outside the reactive context.
+    force(job)
     state$pending_job <- NULL
     state$busy <- TRUE
     show_modal(modalDialog(
@@ -404,7 +408,8 @@ server <- function(input, output, session) {
   observeEvent(input$confirmOverwrite, {
     if (isTRUE(input$overwriteAll)) state$overwrite_all <- TRUE
     hide_modal()
-    if (!is.null(state$pending_job)) start_job(state$pending_job)
+    job <- state$pending_job
+    if (!is.null(job)) start_job(job)
   })
 
   observeEvent(input$openOutFolder, {

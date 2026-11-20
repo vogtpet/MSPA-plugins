@@ -4,6 +4,15 @@ RMSPA plugin versions follow [Semantic Versioning](https://semver.org/) and
 are independent of the MSPA version. The MSPA version wrapped by a release is
 stored in `MSPA_VERSION`.
 
+## [2.2.10] - 2026-11-20
+
+### Fixed
+
+* Confirming *Overwrite* failed with `Can't access reactive value
+  'pending_job' outside of reactive consumer`: the job description was passed
+  to the job starter as a lazy promise and evaluated inside the `later()`
+  callback. It is now forced inside the observer.
+
 ## [2.2.9] - 2026-11-20
 
 ### Added
