@@ -8,7 +8,7 @@ analysis is done by MSPA itself.
 
 | | |
 |---|---|
-| **Plugin version** | 2.2.5 |
+| **Plugin version** | 2.2.6 |
 | **MSPA version** | 2.4 |
 | **Host** | R ≥ 4.0 (64-bit), RStudio recommended |
 
@@ -24,6 +24,14 @@ analysis is done by MSPA itself.
 
 macOS on Intel is no longer supported.
 
+Tested with these builds: Linux x86_64 (Ubuntu 26.10), Linux aarch64 (Fedora,
+openSUSE Tumbleweed, Ubuntu, Debian), Windows x86_64, Windows ARM64 and macOS
+Apple Silicon.
+
+The Help panel shows the detected MSPA target and the architecture of the
+running R session. On Windows ARM the native ARM64 executable is used even
+when R itself runs as x86_64 under emulation.
+
 ## Installation
 
 RMSPA is distributed as a **release archive**. The Git repository contains the
@@ -32,7 +40,7 @@ from a clone cannot find `resources/`. If you cloned the repository, run
 `./scripts/fetch-binaries.sh` (see [Development](#development)) before
 starting the app.
 
-1. Download `RMSPA-2.2.5.zip` from the
+1. Download `RMSPA-2.2.6.zip` from the
    [releases page](https://github.com/vogtpet/MSPA-plugins/releases) and verify
    it against `SHA256SUMS` if you wish.
 2. Extract the archive. You get a folder `RMSPA` containing `app.R`,
@@ -58,7 +66,19 @@ options(repos = c(P3M = "https://packagemanager.posit.co/cran/__linux__/jammy/la
                   CRAN = "https://cloud.r-project.org"))
 ```
 
-A GDAL installation is **not** required to run RMSPA; `terra` ships its own
+On Linux, `terra` has to be compiled when no binary package is available (the
+normal case on aarch64). Install the development packages first:
+
+| Distribution | Packages |
+|---|---|
+| Debian / Ubuntu | `sudo apt install build-essential libuv1-dev zlib1g-dev libgdal-dev libproj-dev libgeos-dev` |
+| Fedora | `sudo dnf install gcc gcc-c++ libuv-devel zlib-devel gdal-devel proj-devel geos-devel` |
+| openSUSE | `sudo zypper install gcc gcc-c++ libuv-devel zlib-devel gdal-devel proj-devel geos-devel` |
+
+These are the packages needed to install `terra` on Fedora, openSUSE
+Tumbleweed, Ubuntu and Debian (aarch64).
+
+A GDAL installation is **not** required to *run* RMSPA; `terra` ships its own
 GDAL. GDAL development files are only needed if `terra` has to be compiled
 from source.
 
@@ -155,7 +175,7 @@ shows a message when a newer plugin version is available. You can also run
 the check manually with **Check for updates**. The new version is downloaded
 from the GitHub release, verified to contain the announced version and
 unpacked **next to** the current installation, for example
-`RMSPA-2.2.5/`. Close RMSPA, start `app.R` from the new folder, and delete the
+`RMSPA-2.2.6/`. Close RMSPA, start `app.R` from the new folder, and delete the
 old folder once the new version works. The current installation is never
 modified by an update.
 
@@ -167,8 +187,9 @@ missing file, a missing execute permission (RMSPA sets it automatically) or a
 blocked executable.
 
 **macOS: "cannot be opened" or the binary does not start**
-Downloaded archives are quarantined by macOS. Remove the flag from the
-extracted folder:
+RMSPA removes the `com.apple.quarantine` flag from its bundled binaries
+(`resources/`) automatically at startup, so the manual step is normally not
+needed. If macOS still blocks the executable, remove the flag manually:
 
 ```sh
 xattr -dr com.apple.quarantine /path/to/RMSPA

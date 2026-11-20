@@ -77,6 +77,11 @@ options(shiny.maxRequestSize = 1e9)
 
 ## Check the bundled MSPA binary once per session.
 runtime <- mspa_runtime(app_dir, expected_version = mspa_version)
+message(sprintf(
+  "RMSPA %s | MSPA %s | target: %s | R %s (%s)",
+  plugin_version, mspa_version,
+  if (is.na(runtime$target)) "unsupported" else runtime$target,
+  getRversion(), R.version$arch))
 
 ## ---- interface -------------------------------------------------------------
 panel_style <- paste("border-style: solid;",
@@ -173,7 +178,11 @@ ui <- fluidPage(
     p(style = "margin-top:10px; margin-bottom:0;",
       actionLink("checkUpdate", "Check for updates"),
       tags$span(class = "rmspa-version",
-                sprintf("installed: %s", plugin_version)))
+                sprintf("installed: %s", plugin_version))),
+    p(class = "rmspa-version", style = "margin-bottom:0;",
+      sprintf("Target: %s \u00b7 R %s (%s)",
+              if (is.na(runtime$target)) "unsupported" else runtime$target,
+              getRversion(), R.version$arch))
   ),
 
   wellPanel(
@@ -194,7 +203,18 @@ server <- function(input, output, session) {
   show_modal <- function(ui) showModal(ui, session = session)
   hide_modal <- function() removeModal(session = session)
 
-  volumes <- c(Home = path.expand("~"), shinyFiles::getVolumes()())
+  ## shinyFiles' Windows drive detection can warn and pair labels
+  ## incorrectly when a drive has no volume label; keep the (correct) paths and
+  ## repair the display names.
+  system_volumes <- tryCatch(suppressWarnings(shinyFiles::getVolumes()()),
+                             error = function(e) NULL)
+  if (length(system_volumes) > 0L) {
+    bad <- !nzchar(names(system_volumes)) |
+      grepl("[/\\\\]", names(system_volumes))
+    names(system_volumes)[bad] <- sub("[/\\\\]+$", "", system_volumes[bad])
+  }
+  volumes <- c(Home = path.expand("~"), system_volumes)
+  volumes <- volumes[!duplicated(unname(volumes))]
 
   shinyFiles::shinyDirChoose(input, "selectFolder", roots = volumes,
                              session = session)

@@ -39,9 +39,12 @@ source("R/process.R")
 binary <- if (!is.null(binary_arg)) binary_arg else
   Sys.getenv("MSPA_BINARY", unset = "")
 if (!nzchar(binary)) binary <- mspa_binary(app_dir)
-if (is.na(binary) || !file.exists(binary)) {
+if (!nzchar(binary)) {
   stop("No MSPA binary for this platform (", mspa_target(), "). ",
        "Use --binary to point to one.", call. = FALSE)
+}
+if (!file.exists(binary)) {
+  stop("The MSPA binary does not exist: ", binary, call. = FALSE)
 }
 if (!mspa_make_executable(binary)) {
   stop("The MSPA binary is not executable: ", binary, call. = FALSE)

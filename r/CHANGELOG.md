@@ -4,6 +4,26 @@ RMSPA plugin versions follow [Semantic Versioning](https://semver.org/) and
 are independent of the MSPA version. The MSPA version wrapped by a release is
 stored in `MSPA_VERSION`.
 
+## [2.2.6] - 2026-11-20
+
+### Added
+
+* macOS: the `com.apple.quarantine` flag is removed from the bundled binaries
+  (`resources/`) automatically at startup, so the manual `xattr` command is no
+  longer required.
+* The Help panel shows the detected MSPA target and the architecture of the
+  running R session.
+
+### Fixed
+
+* Windows: the drive list no longer produces the `shinyFiles` warning when a
+  drive has no volume label, and the affected drive labels are repaired.
+
+### Documentation
+
+* Linux: system packages needed to compile `terra` on Debian/Ubuntu, Fedora and
+  openSUSE, plus the distributions on which the plugin has been tested.
+
 ## [2.2.5] - 2026-11-19
 
 ### Fixed

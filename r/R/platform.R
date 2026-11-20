@@ -146,6 +146,24 @@ mspa_failure_hint <- function(target) {
   "The bundled MSPA binary could not be started."
 }
 
+## macOS: remove the quarantine flag from the bundled binaries. The MSPA
+## executable and its libraries are downloaded inside the release archive and
+## are not notarised, so Gatekeeper would otherwise refuse to start them.
+## This is the same as running
+##   xattr -dr com.apple.quarantine <RMSPA>/resources
+## once by hand.
+mspa_clear_quarantine <- function(path) {
+  if (!identical(Sys.info()[["sysname"]], "Darwin")) return(invisible(FALSE))
+  xattr <- "/usr/bin/xattr"
+  if (!file.exists(xattr) || !file.exists(path)) return(invisible(FALSE))
+  status <- suppressWarnings(tryCatch(
+    system2(xattr, c("-dr", "com.apple.quarantine", shQuote(path)),
+            stdout = FALSE, stderr = FALSE),
+    error = function(e) 1L
+  ))
+  invisible(is.null(status) || identical(as.integer(status), 0L))
+}
+
 ## Resolve the binary for this machine and check that it runs.
 ## Returns a list with ok, target, binary, version and detail.
 mspa_runtime <- function(app_dir, expected_version = NULL) {
@@ -160,6 +178,10 @@ mspa_runtime <- function(app_dir, expected_version = NULL) {
 
   binary <- mspa_binary(app_dir, target)
   out$binary <- binary
+
+  if (identical(Sys.info()[["sysname"]], "Darwin")) {
+    mspa_clear_quarantine(file.path(app_dir, "resources"))
+  }
 
   if (!file.exists(binary)) {
     hint <- ""
