@@ -19,15 +19,27 @@ if [[ -z "$version" ]]; then
   exit 1
 fi
 
+# MSPA_RELEASE is the release tag of the binary archives. It can differ from
+# the engine version when the binaries are rebuilt (for example to lower the
+# macOS deployment target) without changing MSPA itself.
+release_version="$version"
+if [[ -f MSPA_RELEASE ]]; then
+  release_version="$(tr -d '[:space:]' < MSPA_RELEASE)"
+fi
+if [[ -z "$release_version" ]]; then
+  echo "error: MSPA_RELEASE is empty" >&2
+  exit 1
+fi
+
 repo="vogtpet/MSPAstandalone"
-base="https://github.com/${repo}/releases/download/v${version}"
+base="https://github.com/${repo}/releases/download/v${release_version}"
 
 assets=(
-  "mspa-${version}-linux-x86_64-glibc2.31.tar.gz"
-  "mspa-${version}-linux-aarch64.tar.gz"
-  "mspa-${version}-macos-arm64.tar.gz"
-  "mspa-${version}-windows-x86_64.zip"
-  "mspa-${version}-windows-arm64.zip"
+  "mspa-${release_version}-linux-x86_64-glibc2.31.tar.gz"
+  "mspa-${release_version}-linux-aarch64.tar.gz"
+  "mspa-${release_version}-macos-arm64.tar.gz"
+  "mspa-${release_version}-windows-x86_64.zip"
+  "mspa-${release_version}-windows-arm64.zip"
 )
 
 tmp="$(mktemp -d)"
@@ -46,7 +58,7 @@ sha256_of() {
   fi
 }
 
-echo "Fetching MSPA ${version} from ${repo}"
+echo "Fetching MSPA ${version} (release v${release_version}) from ${repo}"
 for asset in "${assets[@]}" SHA256SUMS; do
   echo "  ${asset}"
   curl -fsSL -o "${tmp}/${asset}" "${base}/${asset}"
@@ -72,20 +84,25 @@ mkdir -p resources/linux-x86_64 resources/linux-aarch64 resources/macos-arm64 \
 mkdir -p "${tmp}/linux-x86_64" "${tmp}/linux-aarch64" "${tmp}/macos-arm64" \
          "${tmp}/windows-x86_64" "${tmp}/windows-arm64"
 
-tar -xzf "${tmp}/mspa-${version}-linux-x86_64-glibc2.31.tar.gz" \
+tar -xzf "${tmp}/mspa-${release_version}-linux-x86_64-glibc2.31.tar.gz" \
     --strip-components=1 -C "${tmp}/linux-x86_64"
-tar -xzf "${tmp}/mspa-${version}-linux-aarch64.tar.gz" \
+tar -xzf "${tmp}/mspa-${release_version}-linux-aarch64.tar.gz" \
     --strip-components=1 -C "${tmp}/linux-aarch64"
-tar -xzf "${tmp}/mspa-${version}-macos-arm64.tar.gz" \
+tar -xzf "${tmp}/mspa-${release_version}-macos-arm64.tar.gz" \
     --strip-components=1 -C "${tmp}/macos-arm64"
-unzip -qj "${tmp}/mspa-${version}-windows-x86_64.zip" -d "${tmp}/windows-x86_64"
-unzip -qj "${tmp}/mspa-${version}-windows-arm64.zip" -d "${tmp}/windows-arm64"
+unzip -qj "${tmp}/mspa-${release_version}-windows-x86_64.zip" -d "${tmp}/windows-x86_64"
+unzip -qj "${tmp}/mspa-${release_version}-windows-arm64.zip" -d "${tmp}/windows-arm64"
 
 cp "${tmp}/linux-x86_64/mspa_linux"          resources/linux-x86_64/
 cp "${tmp}/linux-aarch64/mspa_linux_ARM"     resources/linux-aarch64/
 cp "${tmp}/macos-arm64/mspa_macOS_ARM"       resources/macos-arm64/
-cp "${tmp}/macos-arm64/libdeflate.0.dylib"   resources/macos-arm64/
-cp "${tmp}/macos-arm64/libLerc.4.dylib"      resources/macos-arm64/
+# Older builds bundle the two codec libraries; the current build links them
+# statically, so copy them only when the archive contains them.
+for lib in libdeflate.0.dylib libLerc.4.dylib; do
+  if [[ -f "${tmp}/macos-arm64/${lib}" ]]; then
+    cp "${tmp}/macos-arm64/${lib}" resources/macos-arm64/
+  fi
+done
 cp "${tmp}/windows-x86_64/mspa_win64.exe"    resources/windows-x86_64/
 cp "${tmp}/windows-arm64/mspa_win64_ARM.exe" resources/windows-arm64/
 
@@ -94,17 +111,12 @@ find resources -type f ! -name '*.dylib' -exec chmod 755 {} +
 echo "Recording provenance"
 {
   echo "MSPA version: ${version}"
-  echo "Source: https://github.com/${repo}/releases/tag/v${version}"
+  echo "Release: v${release_version}"
+  echo "Source: https://github.com/${repo}/releases/tag/v${release_version}"
   echo "Fetched: $(date -u '+%Y-%m-%d %H:%M UTC')"
   echo ""
-  (cd resources && for f in \
-      linux-x86_64/mspa_linux \
-      linux-aarch64/mspa_linux_ARM \
-      macos-arm64/mspa_macOS_ARM \
-      macos-arm64/libdeflate.0.dylib \
-      macos-arm64/libLerc.4.dylib \
-      windows-x86_64/mspa_win64.exe \
-      windows-arm64/mspa_win64_ARM.exe; do
+  (cd resources && find . -type f ! -name BINARIES.txt | sed 's#^\./##' | sort | \
+    while IFS= read -r f; do
       echo "$(sha256_of "$f")  $f"
     done)
 } > resources/BINARIES.txt

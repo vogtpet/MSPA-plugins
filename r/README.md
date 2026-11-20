@@ -8,7 +8,7 @@ analysis is done by MSPA itself.
 
 | | |
 |---|---|
-| **Plugin version** | 2.2.7 |
+| **Plugin version** | 2.2.8 |
 | **MSPA version** | 2.4 |
 | **Host** | R ≥ 4.0 (64-bit), RStudio recommended |
 
@@ -18,7 +18,7 @@ analysis is done by MSPA itself.
 |---|---|---|
 | Linux | x86_64 (glibc ≥ 2.31) | `mspa_linux` |
 | Linux | aarch64 | `mspa_linux_ARM` |
-| macOS | Apple Silicon | `mspa_macOS_ARM` |
+| macOS | Apple Silicon (11 or later) | `mspa_macOS_ARM` |
 | Windows | x86_64 | `mspa_win64.exe` |
 | Windows | ARM64 | `mspa_win64_ARM.exe` |
 
@@ -40,7 +40,7 @@ from a clone cannot find `resources/`. If you cloned the repository, run
 `./scripts/fetch-binaries.sh` (see [Development](#development)) before
 starting the app.
 
-1. Download `RMSPA-2.2.7.zip` from the
+1. Download `RMSPA-2.2.8.zip` from the
    [releases page](https://github.com/vogtpet/MSPA-plugins/releases) and verify
    it against `SHA256SUMS` if you wish.
 2. Extract the archive. You get a folder `RMSPA` containing `app.R`,
@@ -176,7 +176,7 @@ the check manually with **Check for updates**; the last result is cached for
 offline use. The new version is downloaded
 from the GitHub release, verified to contain the announced version and
 unpacked **next to** the current installation, for example
-`RMSPA-2.2.7/`. Close RMSPA, start `app.R` from the new folder, and delete the
+`RMSPA-2.2.8/`. Close RMSPA, start `app.R` from the new folder, and delete the
 old folder once the new version works. The current installation is never
 modified by an update.
 
@@ -196,9 +196,8 @@ needed. If macOS still blocks the executable, remove the flag manually:
 xattr -dr com.apple.quarantine /path/to/RMSPA
 ```
 
-The macOS ARM build of MSPA 2.4 currently declares macOS 27 as its minimum
-version. On older macOS versions the MSPA binary cannot be started; a rebuild
-with a lower deployment target is tracked in MSPAstandalone.
+Since RMSPA 2.2.8 the macOS ARM binary is built for **macOS 11 or later**
+(MSPA 2.4.1). The previous archive (2.2.7 and earlier) required macOS 27.
 
 **Windows: SmartScreen or antivirus warnings**
 The MSPA executable is not code signed. Verify the SHA-256 checksum of the
@@ -234,8 +233,10 @@ page for every archive and falls back to `www/MSPA_Guide.pdf` if the server is
 unavailable.
 
 The binaries are not stored in the repository; `fetch-binaries.sh` downloads
-the archives of the MSPA release named in `MSPA_VERSION`, verifies the
-upstream checksums and records the provenance in `resources/BINARIES.txt`.
+the archives of the MSPA release named in `MSPA_RELEASE` (currently 2.4.1),
+verifies the upstream checksums and records the provenance in
+`resources/BINARIES.txt`. `MSPA_VERSION` is the engine version (2.4) that the
+startup check compares with the binary.
 `resources/` is ignored by git.
 
 On a platform without a bundled binary (for example an Intel Mac) pass a

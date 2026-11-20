@@ -4,6 +4,18 @@ RMSPA plugin versions follow [Semantic Versioning](https://semver.org/) and
 are independent of the MSPA version. The MSPA version wrapped by a release is
 stored in `MSPA_VERSION`.
 
+## [2.2.8] - 2026-11-20
+
+### Changed
+
+* The macOS ARM binaries were rebuilt with a **macOS 11** deployment target
+  (MSPAstandalone release v2.4.1 instead of v2.4); the previous bundle required
+  macOS 27. `libdeflate` and `Lerc` are now linked statically, so the macOS
+  application folder contains only the executable.
+* Binary downloads use the new `MSPA_RELEASE` file (release tag of the archives)
+  while `MSPA_VERSION` remains the engine version (2.4) used by the startup
+  check.
+
 ## [2.2.7] - 2026-11-20
 
 ### Fixed

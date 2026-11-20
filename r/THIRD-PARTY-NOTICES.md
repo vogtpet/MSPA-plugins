@@ -1,6 +1,7 @@
 # Third-party notices
 
-RMSPA bundles the MSPA command line tool and, on macOS, two dynamic libraries.
+RMSPA bundles the MSPA command line tool. On macOS, `libdeflate` and `Lerc`
+are linked statically into the executable.
 
 ## MSPA and miallib
 
@@ -15,13 +16,13 @@ MSPAstandalone](https://github.com/vogtpet/MSPAstandalone#third-party-components
 (libtiff, libjpeg-turbo, libpng, libwebp, jbigkit, zlib, zstd, xz/liblzma,
 libdeflate, Lerc). The upstream notices are retained in that repository.
 
-## libdeflate (macOS)
+## libdeflate (linked statically)
 
 <https://github.com/ebiggers/libdeflate>
 Copyright (C) 2016 Eric Biggers, 2024 Google LLC.
 License: MIT. Full text: [licenses/MIT.txt](licenses/MIT.txt).
 
-## Lerc (macOS)
+## Lerc (linked statically)
 
 <https://github.com/Esri/lerc>
 Copyright (C) Esri.
