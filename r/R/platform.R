@@ -60,7 +60,11 @@ mspa_target <- function() {
   if (identical(sys, "Windows")) {
     pa  <- toupper(Sys.getenv("PROCESSOR_ARCHITECTURE", unset = ""))
     paw <- toupper(Sys.getenv("PROCESSOR_ARCHITEW6432", unset = ""))
+    ## PROCESSOR_IDENTIFIER describes the native CPU, also when R runs as
+    ## x86_64 under emulation on Windows ARM.
+    pid <- toupper(Sys.getenv("PROCESSOR_IDENTIFIER", unset = ""))
     if (identical(pa, "ARM64") || identical(paw, "ARM64") ||
+        grepl("ARM", pid, fixed = TRUE) ||
         grepl("arm64|aarch64", R.version$arch, ignore.case = TRUE)) {
       return("windows-arm64")
     }

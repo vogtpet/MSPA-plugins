@@ -4,6 +4,21 @@ RMSPA plugin versions follow [Semantic Versioning](https://semver.org/) and
 are independent of the MSPA version. The MSPA version wrapped by a release is
 stored in `MSPA_VERSION`.
 
+## [2.2.7] - 2026-11-20
+
+### Fixed
+
+* Windows ARM: the native ARM64 system is now detected through
+  `PROCESSOR_IDENTIFIER`, so `mspa_win64_ARM.exe` is used also when R/RStudio
+  run as x86_64 under emulation. Previously the x86_64 executable was selected
+  in that configuration.
+
+### Changed
+
+* The update check runs at every start instead of using the 24 h cache. The
+  cached version is only used when GitHub cannot be reached, so the "Update
+  available" dialog appears at the next start after a release.
+
 ## [2.2.6] - 2026-11-20
 
 ### Added

@@ -19,6 +19,12 @@ here <- if (length(file_arg) == 1L && nzchar(file_arg)) {
 app_dir <- normalizePath(file.path(here, ".."))
 options(rmspa.app_dir = app_dir)
 
+## Keep the automatic update check offline during the test.
+version_file <- file.path(tempdir(), "rmspa-test-version.txt")
+writeLines(readLines(file.path(app_dir, "VERSION"), n = 1L, warn = FALSE),
+           version_file)
+Sys.setenv(RMSPA_UPDATE_URL = paste0("file://", version_file))
+
 suppressPackageStartupMessages(library(shiny))
 source(file.path(app_dir, "app.R"), local = TRUE)
 app <- shinyApp(ui, server)

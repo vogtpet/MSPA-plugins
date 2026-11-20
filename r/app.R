@@ -381,8 +381,10 @@ server <- function(input, output, session) {
 
   ## ---- update check --------------------------------------------------------
   do_check <- function(manual = FALSE) {
+    ## Always ask GitHub: the cache is only used when the network is
+    ## unavailable, so a new release is noticed at the next start.
     res <- tryCatch(
-      check_for_update(plugin_version, refresh = manual),
+      check_for_update(plugin_version, refresh = TRUE),
       error = function(e) list(ok = FALSE, message = conditionMessage(e))
     )
 
