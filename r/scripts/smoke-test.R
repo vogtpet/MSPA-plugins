@@ -147,6 +147,14 @@ check("non-GeoTIFF names are rejected",
       !isTRUE(mspa_inspect("examples/input.tif", name = "input.png")$ok))
 
 ## --- summary ----------------------------------------------------------------
+## --- 5. output naming -------------------------------------------------------
+cat("\n[5] output naming\n")
+check("parameters are part of the name",
+      identical(mspa_output_name("forest.tif", 4L, 2L, 0L, 1L),
+                "forest_4_2_0_1.tif"))
+check(".tiff is stripped",
+      identical(mspa_output_name("a.tiff", 8L, 1L, 1L, 1L), "a_8_1_1_1.tif"))
+
 cat("\n")
 if (failures > 0L) {
   cat("FAILED (", failures, " check(s))\n", sep = "")

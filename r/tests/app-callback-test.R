@@ -88,13 +88,17 @@ testServer(app, {
   session$setInputs(
     btnSelectFile = list(datapath = file.path(app_dir, "examples/input.tif"),
                          name = "input.tif"),
-    encoding = "gtb"
+    encoding = "gtb",
+    fgconn = "8", edgewidth = "1", transition = "1", intext = "1",
+    lowmem = FALSE
   )
   session$flushReact()
   check("input accepted", isTRUE(state$info$ok),
         if (is.null(state$info)) "no input info" else state$info$message)
 
   session$setInputs(selectFolder = list(root = "Home", path = ".rmspa-callback-test"))
+  output_file <- file.path(outdir, "input_8_1_1_1.tif")
+  if (file.exists(output_file)) unlink(output_file)
   session$setInputs(btnStart = 1)
   session$flushReact()
 
@@ -117,6 +121,21 @@ testServer(app, {
         identical(state$busy, FALSE) && is.null(state$last))
   check("failure path used no reactive values", is.null(callback_error),
         callback_error %||% "")
+
+  ## An existing result must be confirmed before it is overwritten.
+  stub_result <<- list(ok = TRUE, message = "ok", outfile = "",
+                       disk = FALSE, params = list())
+  state$last <- NULL
+  writeLines("previous result", output_file)
+  session$setInputs(btnStart = 3)
+  session$flushReact()
+  check("existing result waits for confirmation",
+        is.null(state$last) && !isTRUE(state$busy))
+  session$setInputs(confirmOverwrite = 1)
+  session$flushReact()
+  check("confirmed overwrite runs the job",
+        wait_for(function() !is.null(state$last)))
+  unlink(output_file)
 })
 
 cat("\n")

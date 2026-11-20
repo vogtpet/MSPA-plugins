@@ -148,6 +148,17 @@ mspa_inspect <- function(path, encoding = c("gtb", "mask"),
   mspa_check_raster(r, encoding = encoding, max_pixels = max_pixels)
 }
 
+## Name of the result file. The parameters are part of the name, so the same
+## input and settings always produce the same file name.
+mspa_output_name <- function(input_name, graphfg = 8L, eew = 1L,
+                             transition = 1L, internal = 1L) {
+  base <- tools::file_path_sans_ext(basename(input_name))
+  if (!nzchar(base)) base <- "mspa"
+  sprintf("%s_%d_%d_%d_%d.tif", base,
+          as.integer(graphfg), as.integer(eew),
+          as.integer(transition), as.integer(internal))
+}
+
 ## Run MSPA on one image.
 ##
 ## binary     path to the MSPA executable (see mspa_binary())
@@ -277,10 +288,8 @@ mspa_process <- function(input, outdir,
       p$graphfg, p$eew, p$transition, p$internal)
   )
 
-  base <- tools::file_path_sans_ext(basename(input_name))
-  if (!nzchar(base)) base <- "mspa"
-  out_name <- sprintf("%s_%d_%d_%d_%d.tif", base,
-                      p$graphfg, p$eew, p$transition, p$internal)
+  out_name <- mspa_output_name(input_name, p$graphfg, p$eew,
+                               p$transition, p$internal)
   tags[["TIFFTAG_DOCUMENTNAME"]] <- out_name
   outfile <- file.path(outdir, out_name)
 

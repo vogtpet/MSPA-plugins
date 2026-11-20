@@ -196,7 +196,8 @@ ui <- fluidPage(
 server <- function(input, output, session) {
 
   state <- reactiveValues(info = NULL, last = NULL, update = NULL,
-                          new_app = NULL, busy = FALSE)
+                          new_app = NULL, busy = FALSE,
+                          overwrite_all = FALSE, pending_job = NULL)
 
   ## The modals are also opened and closed from later::later() callbacks, where
   ## no default reactive domain is active. Pass the session explicitly.
@@ -361,6 +362,33 @@ server <- function(input, output, session) {
       low_mem = isTRUE(input$lowmem)
     )
 
+    state$pending_job <- job
+    outfile <- file.path(outdir, mspa_output_name(job$name, job$graphfg,
+                                                  job$eew, job$transition,
+                                                  job$internal))
+
+    if (file.exists(outfile) && !isTRUE(state$overwrite_all)) {
+      show_modal(modalDialog(
+        title = "Result already exists",
+        p("A result with the same name already exists:"),
+        tags$code(outfile),
+        p("Do you want to overwrite it?"),
+        checkboxInput("overwriteAll",
+                      "Always overwrite existing results in this session",
+                      value = FALSE),
+        footer = tagList(
+          actionButton("confirmOverwrite", "Overwrite"),
+          modalButton("Cancel")
+        )
+      ))
+      return()
+    }
+
+    start_job(job)
+  })
+
+  start_job <- function(job) {
+    state$pending_job <- NULL
     state$busy <- TRUE
     show_modal(modalDialog(
       title = NULL,
@@ -371,6 +399,12 @@ server <- function(input, output, session) {
       easyClose = FALSE
     ))
     later::later(function() run_job(job), 0.25)
+  }
+
+  observeEvent(input$confirmOverwrite, {
+    if (isTRUE(input$overwriteAll)) state$overwrite_all <- TRUE
+    hide_modal()
+    if (!is.null(state$pending_job)) start_job(state$pending_job)
   })
 
   observeEvent(input$openOutFolder, {

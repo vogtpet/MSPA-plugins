@@ -4,6 +4,15 @@ RMSPA plugin versions follow [Semantic Versioning](https://semver.org/) and
 are independent of the MSPA version. The MSPA version wrapped by a release is
 stored in `MSPA_VERSION`.
 
+## [2.2.9] - 2026-11-20
+
+### Added
+
+* Before a job starts, RMSPA checks whether a result with the same name already
+  exists (same input name and parameters) and asks for confirmation. The dialog
+  offers *Overwrite* and *Cancel* and can remember the choice for the rest of
+  the session.
+
 ## [2.2.8] - 2026-11-20
 
 ### Changed
