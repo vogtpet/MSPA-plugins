@@ -1,0 +1,73 @@
+name: Release MSPA ArcGIS
+
+on:
+  push:
+    tags:
+      - "arcgis-v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: build and publish
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: arcgis
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify tag against VERSION
+        run: |
+          version="$(tr -d '[:space:]' < VERSION)"
+          tag="${GITHUB_REF_NAME#arcgis-v}"
+          echo "tag=${tag} VERSION=${version}"
+          if [[ -z "${version}" || "${tag}" != "${version}" ]]; then
+            echo "error: tag arcgis-v${tag} does not match arcgis/VERSION (${version})" >&2
+            exit 1
+          fi
+
+      - name: Check Python syntax
+        run: |
+          python3 -m py_compile mspa/MSPA.pyt
+          rm -rf mspa/__pycache__
+
+      - name: Fetch the MSPA binary, GDAL bundle and guide
+        run: ./scripts/fetch-resources.sh
+
+      - name: Build the release archive
+        run: ./scripts/build-release.sh
+
+      - name: Prepare release notes
+        run: |
+          version="$(tr -d '[:space:]' < VERSION)"
+          engine="$(tr -d '[:space:]' < MSPA_VERSION)"
+          release="$(tr -d '[:space:]' < MSPA_RELEASE)"
+          {
+            echo "MSPA engine: **${engine}** (binary release ${release})"
+            echo
+            awk -v ver="${version}" '
+              index($0, "## [" ver "]") == 1 {on=1; next}
+              on && substr($0, 1, 4) == "## [" {exit}
+              on {print}
+            ' CHANGELOG.md
+            echo
+            echo "See [README.md](https://github.com/${GITHUB_REPOSITORY}/blob/main/arcgis/README.md) for installation and usage."
+          } > ../release-notes-arcgis.md
+          cat ../release-notes-arcgis.md
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="$(tr -d '[:space:]' < VERSION)"
+          engine="$(tr -d '[:space:]' < MSPA_VERSION)"
+          gh release create "arcgis-v${version}" \
+            "dist/MSPA-ArcGIS-${version}.zip" \
+            "dist/SHA256SUMS" \
+            --title "MSPA ArcGIS ${version} (MSPA ${engine})" \
+            --notes-file ../release-notes-arcgis.md

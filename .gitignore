@@ -1,7 +1,16 @@
 # Build output
 r/dist/
 r/resources/
+arcgis/dist/
+arcgis/mspa/resources/gdal/
+arcgis/mspa/resources/mspa_win64.exe
+arcgis/mspa/resources/BINARIES.txt
+arcgis/MSPA_Guide.pdf
 *.zip
+
+# Python byte code
+__pycache__/
+*.pyc
 
 # R session files
 .Rhistory

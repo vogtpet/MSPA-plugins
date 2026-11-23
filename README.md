@@ -16,7 +16,7 @@ it does not contain a separate MSPA implementation.
 | R / RStudio | [`r/`](r/) | 2.2.13 | 2.4 | [RMSPA-2.2.13.zip](https://github.com/vogtpet/MSPA-plugins/releases/download/r-v2.2.13/RMSPA-2.2.13.zip) |
 | QGIS 3 | [`qgis3/`](qgis3/) | – | 2.4 | planned |
 | QGIS 4 | [`qgis4/`](qgis4/) | – | 2.4 | planned |
-| ArcGIS | [`arcgis/`](arcgis/) | – | 2.4 | planned |
+| ArcGIS | [`arcgis/`](arcgis/) | 2.1.0 | 2.4 | [MSPA-ArcGIS-2.1.0.zip](https://github.com/vogtpet/MSPA-plugins/releases/download/arcgis-v2.1.0/MSPA-ArcGIS-2.1.0.zip) |
 
 The installable archives are attached to the [releases](https://github.com/vogtpet/MSPA-plugins/releases).
 The repository itself contains the sources; the MSPA binaries are downloaded
@@ -36,7 +36,8 @@ when an archive is built.
 Every plugin publishes its current version in a plain text file, for example
 `r/VERSION`. The installed plugin reads that file from GitHub and offers the
 new release when the published version is higher than the installed one.
-Releases are published as tags with a plugin prefix, for example `r-v2.2.13`,
+Releases are published as tags with a plugin prefix, for example `r-v2.2.13`
+and `arcgis-v2.1.0`,
 and the archives are attached to the corresponding GitHub release.
 
 ## Repository layout

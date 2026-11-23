@@ -1,0 +1,43 @@
+name: arcgis CI
+
+on:
+  push:
+    paths:
+      - "arcgis/**"
+      - ".github/workflows/ci-arcgis.yml"
+  pull_request:
+    paths:
+      - "arcgis/**"
+      - ".github/workflows/ci-arcgis.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: arcgis
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check Python syntax
+        run: |
+          python3 -m py_compile mspa/MSPA.pyt
+          rm -rf mspa/__pycache__
+
+      - name: Fetch the MSPA binary, GDAL bundle and guide
+        run: ./scripts/fetch-resources.sh
+
+      - name: Build the release archive
+        run: ./scripts/build-release.sh
+
+      - name: Inspect the archive
+        run: |
+          unzip -l dist/MSPA-ArcGIS-*.zip | head -25
+          unzip -p dist/MSPA-ArcGIS-*.zip MSPA-ArcGIS/mspa/resources/BINARIES.txt

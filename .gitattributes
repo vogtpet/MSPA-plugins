@@ -5,3 +5,5 @@
 *.tiff binary
 *.png binary
 *.gif binary
+
+*.bat text eol=crlf
