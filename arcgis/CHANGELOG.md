@@ -5,6 +5,16 @@ and are independent of the MSPA version. The MSPA version wrapped by a release
 is stored in `MSPA_VERSION`; the binary release it is taken from is in
 `MSPA_RELEASE`.
 
+## [2.2.5] - 2026-11-23
+
+### Changed
+
+* The Windows installer (`install_MSPA-ToolboxArc_Windows.bat`) was removed.
+  ArcGIS Pro does not scan the folder it copied to, so the README now
+  documents the reliable procedure: extract the archive to a permanent
+  folder, add `MSPA.pyt` with **Catalog → Toolboxes → Add Toolbox**, and mark
+  the toolbox as a favorite (or add it to new projects).
+
 ## [2.2.4] - 2026-11-23
 
 ### Fixed

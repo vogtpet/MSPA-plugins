@@ -6,7 +6,7 @@ wrapping the MSPA 2.4 command line tool from
 
 | | |
 |---|---|
-| **Plugin version** | 2.2.4 |
+| **Plugin version** | 2.2.5 |
 | **MSPA version** | 2.4 (release 2.4.1) |
 | **Host** | ArcGIS Pro or ArcGIS Desktop 10.3–10.9 (64-bit Windows) |
 
@@ -17,29 +17,30 @@ Windows ARM they run under emulation and use the x86_64 MSPA executable.
 
 ## Installation
 
-1. Download `MSPA-ArcGIS-2.2.4.zip` from the
-   [ArcGIS release](https://github.com/vogtpet/MSPA-plugins/releases/tag/arcgis-v2.2.4)
+1. Download `MSPA-ArcGIS-2.2.5.zip` from the
+   [ArcGIS release](https://github.com/vogtpet/MSPA-plugins/releases/tag/arcgis-v2.2.5)
    and verify it against `SHA256SUMS` if you wish.
-2. Extract the archive.
-3. Run `install_MSPA-ToolboxArc_Windows.bat`. It copies the `mspa` folder to
-   *My Toolboxes* for every detected ArcGIS Desktop installation and to
-   `%LOCALAPPDATA%\ESRI\ArcGISPro\Toolboxes` for ArcGIS Pro.
-4. **ArcGIS Pro:** the toolbox should appear in the Catalog pane under
-   *Toolboxes*. If it does not, right-click **Toolboxes → Add Toolbox** and
-   select
-   `%LOCALAPPDATA%\ESRI\ArcGISPro\Toolboxes\mspa\MSPA.pyt`. ArcGIS Pro 3.x
-   does not have the ArcMap *My Toolboxes* folder. To make the toolbox
-   available in every new project, add it to your project template (for
-   example `...\ArcGIS\Template\template.atbx`).
-   **ArcGIS Desktop:** add `MSPA.pyt` to ArcToolbox (the installer copied it to
-   *My Toolboxes*).
+2. Extract the archive to a **permanent** folder, for example
+   `C:\Users\<user>\Documents\ArcGIS\MSPA-ArcGIS`. The `mspa` folder with
+   `MSPA.pyt` and its `resources` must stay together; do not move only the
+   `.pyt`.
+3. Open ArcGIS Pro and the **Catalog** pane (*View → Catalog Pane*).
+4. Right-click **Toolboxes → Add Toolbox…** and select
+   `...\MSPA-ArcGIS\mspa\MSPA.pyt`.
+5. Right-click the new **MSPA** toolbox in the Catalog and choose
+   **Add to Favorites** (in some ArcGIS Pro versions **Add To New Projects**)
+   so it is available in other and new projects.
+6. Run the **MSPA** tool from the toolbox.
 
-You can also copy the `mspa` folder manually to a folder of your choice and
-add `MSPA.pyt` there.
+ArcGIS Pro does not scan a special "My Toolboxes" folder, so adding the
+toolbox once and marking it as a favorite is the reliable installation.
 
-If an earlier version was installed, remove the old
-`%USERPROFILE%\MSPA-Toolbox` folder and the old MSPA toolbox entry from the
-project.
+**ArcGIS Desktop 10.3–10.9:** copy the `mspa` folder to a permanent location
+(or to `%APPDATA%\ESRI\Desktop10.x\ArcToolbox\My Toolboxes`), open
+ArcToolbox → **Add Toolbox** and select `MSPA.pyt`.
+
+If an earlier version was installed, remove the old toolbox entry (and the old
+`%USERPROFILE%\MSPA-Toolbox` folder if it exists) before adding the new one.
 
 ## Input
 

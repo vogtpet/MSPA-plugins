@@ -26,28 +26,13 @@ mkdir -p "$root"
 cp -R mspa "$root/"
 find "$root/mspa" -name '__pycache__' -type d -prune -exec rm -rf {} + 2>/dev/null || true
 
-cp install_MSPA-ToolboxArc_Windows.bat input.tif README.md VERSION \
-   MSPA_VERSION MSPA_RELEASE CHANGELOG.md MSPA_Guide.pdf "$root/"
+cp input.tif README.md VERSION MSPA_VERSION MSPA_RELEASE CHANGELOG.md \
+   MSPA_Guide.pdf "$root/"
 cp ../LICENSE "$root/"
 
 chmod -R a+rX "$root"
 chmod 755 "$root/mspa/resources/mspa_win64.exe"
 find "$root/mspa/resources/gdal" -name '*.exe' -exec chmod 755 {} +
-
-# The batch file must use CRLF, also when the archive is built on Linux.
-if command -v unix2dos >/dev/null 2>&1; then
-  unix2dos -q "$root/install_MSPA-ToolboxArc_Windows.bat"
-else
-  python3 - "$root/install_MSPA-ToolboxArc_Windows.bat" <<'PY'
-import sys
-path = sys.argv[1]
-with open(path, "rb") as handle:
-    data = handle.read()
-data = data.replace(b"\r\n", b"\n").replace(b"\n", b"\r\n")
-with open(path, "wb") as handle:
-    handle.write(data)
-PY
-fi
 
 mkdir -p dist
 zip_name="MSPA-ArcGIS-${version}.zip"
