@@ -5,6 +5,18 @@ and are independent of the MSPA version. The MSPA version wrapped by a release
 is stored in `MSPA_VERSION`; the binary release it is taken from is in
 `MSPA_RELEASE`.
 
+## [2.2.1] - 2026-11-23
+
+### Added
+
+* The tool messages start with the plugin version, and the GDAL import error
+  is reported when ArcGIS Pro's bindings cannot be loaded.
+
+### Fixed
+
+* The conda environment's `Library/bin` is added to the DLL search path before
+  importing `osgeo`, so ArcGIS Pro's own GDAL 3.x can be used reliably.
+
 ## [2.2.0] - 2026-11-23
 
 ### Changed

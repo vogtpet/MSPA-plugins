@@ -6,7 +6,7 @@ wrapping the MSPA 2.4 command line tool from
 
 | | |
 |---|---|
-| **Plugin version** | 2.2.0 |
+| **Plugin version** | 2.2.1 |
 | **MSPA version** | 2.4 (release 2.4.1) |
 | **Host** | ArcGIS Pro or ArcGIS Desktop 10.3–10.9 (64-bit Windows) |
 
@@ -17,8 +17,8 @@ Windows ARM they run under emulation and use the x86_64 MSPA executable.
 
 ## Installation
 
-1. Download `MSPA-ArcGIS-2.2.0.zip` from the
-   [ArcGIS release](https://github.com/vogtpet/MSPA-plugins/releases/tag/arcgis-v2.2.0)
+1. Download `MSPA-ArcGIS-2.2.1.zip` from the
+   [ArcGIS release](https://github.com/vogtpet/MSPA-plugins/releases/tag/arcgis-v2.2.1)
    and verify it against `SHA256SUMS` if you wish.
 2. Extract the archive.
 3. Run `install_MSPA-ToolboxArc_Windows.bat`. It copies the `mspa` folder to

@@ -27,18 +27,28 @@ try:
 except ImportError:
     from urllib2 import urlopen  # Python 2
 
+# ArcGIS Pro ships GDAL with the Python bindings (osgeo) in its conda
+# environment. Make the DLLs of that environment findable before importing.
+_conda_bin = os.path.join(sys.prefix, "Library", "bin")
+if os.path.isdir(_conda_bin):
+    os.environ["PATH"] = _conda_bin + os.pathsep + os.environ.get("PATH", "")
+    _share = os.path.join(sys.prefix, "Library", "share")
+    if "PROJ_LIB" not in os.environ and os.path.isdir(os.path.join(_share, "proj")):
+        os.environ["PROJ_LIB"] = os.path.join(_share, "proj")
+    if "GDAL_DATA" not in os.environ and os.path.isdir(os.path.join(_share, "gdal")):
+        os.environ["GDAL_DATA"] = os.path.join(_share, "gdal")
+
+GDAL_IMPORT_ERROR = None
 try:
-    # ArcGIS Pro ships GDAL with the Python bindings (osgeo). Use it for the
-    # TIFF conversion; the bundled GDAL executable is only a fallback for
-    # ArcGIS Desktop.
     from osgeo import gdal
     HAS_GDAL_PYTHON = True
-except ImportError:
+except Exception as exc:
     gdal = None
     HAS_GDAL_PYTHON = False
+    GDAL_IMPORT_ERROR = str(exc)
 
 
-PLUGIN_VERSION = "2.2.0"
+PLUGIN_VERSION = "2.2.1"
 UPDATE_URL = ("https://raw.githubusercontent.com/vogtpet/MSPA-plugins/"
               "main/arcgis/VERSION")
 RELEASE_URL = "https://github.com/vogtpet/MSPA-plugins/releases/tag/arcgis-v"
@@ -217,6 +227,7 @@ class MSPA(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
+        messages.AddMessage("MSPA ArcGIS plugin %s (MSPA 2.4)" % PLUGIN_VERSION)
         check_for_update(messages)
 
         if self.install_info['ProductName'] == 'ArcGISPro':
@@ -348,6 +359,10 @@ class MSPA(object):
             except Exception:
                 messages.AddMessage("Using the built-in GDAL.")
         else:
+            if GDAL_IMPORT_ERROR:
+                messages.AddWarningMessage(
+                    "ArcGIS Pro's GDAL bindings could not be loaded: "
+                    + GDAL_IMPORT_ERROR)
             messages.AddWarningMessage(
                 "Using the bundled legacy GDAL. It requires the Microsoft "
                 "Visual C++ 2013 x64 Redistributable.")
