@@ -4,6 +4,20 @@ RMSPA plugin versions follow [Semantic Versioning](https://semver.org/) and
 are independent of the MSPA version. The MSPA version wrapped by a release is
 stored in `MSPA_VERSION`.
 
+## [2.2.12] - 2026-11-23
+
+### Fixed
+
+* The Step 1 panel reported `Missing (NoData): none` although value 0 — the
+  missing class in the GTB encoding — was present. The missing count now
+  includes value 0 for GTB input, and the pixel value list marks the 0 class
+  as `missing`.
+
+### Changed
+
+* Removed the redundant `Foreground pixels` line; the count is already part of
+  the pixel value list.
+
 ## [2.2.11] - 2026-11-23
 
 ### Added

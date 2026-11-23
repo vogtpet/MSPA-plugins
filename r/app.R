@@ -269,9 +269,11 @@ server <- function(input, output, session) {
     }
     i <- info$info
     values <- i$values
-    shown <- paste(sprintf("%d (%s)", values$value,
-                           format(values$count, big.mark = ",")),
-                   collapse = ", ")
+    shown <- paste(sprintf(
+      "%d (%s%s)", values$value,
+      format(values$count, big.mark = ","),
+      if (identical(i$encoding, "gtb") && values$value == 0) ", missing" else ""),
+      collapse = ", ")
     div(class = "rmspa-info",
         tags$div(sprintf("Size: %s x %s pixels (%.1f million)",
                          format(i$rows, big.mark = ","),
@@ -280,12 +282,10 @@ server <- function(input, output, session) {
         tags$div(sprintf("Data type: %s", i$datatype)),
         tags$div(sprintf("Projection: %s", i$crs)),
         tags$div(sprintf("Pixel values: %s", shown)),
-        tags$div(sprintf("Foreground pixels: %s",
-                         format(i$foreground, big.mark = ","))),
         tags$div(sprintf("Missing (NoData): %s",
                          if (i$missing > 0) format(i$missing, big.mark = ",") else "none")),
-        if (i$missing > 0 && !is.na(i$nodata))
-          tags$div(sprintf("NoData value: %s", i$nodata)),
+        if (!is.na(i$nodata))
+          tags$div(sprintf("Declared NoData value: %s", i$nodata)),
         if (identical(i$encoding, "mask") && i$missing == 0)
           tags$div(em("No NoData cells: 0 is treated as background.")),
         if (i$disk) tags$div(em("The image is large; low memory mode will be used."))

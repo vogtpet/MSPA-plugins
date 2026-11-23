@@ -8,7 +8,7 @@ analysis is done by MSPA itself.
 
 | | |
 |---|---|
-| **Plugin version** | 2.2.11 |
+| **Plugin version** | 2.2.12 |
 | **MSPA version** | 2.4 |
 | **Host** | R ≥ 4.0 (64-bit), RStudio recommended |
 
@@ -40,7 +40,7 @@ from a clone cannot find `resources/`. If you cloned the repository, run
 `./scripts/fetch-binaries.sh` (see [Development](#development)) before
 starting the app.
 
-1. Download `RMSPA-2.2.11.zip` from the
+1. Download `RMSPA-2.2.12.zip` from the
    [releases page](https://github.com/vogtpet/MSPA-plugins/releases) and verify
    it against `SHA256SUMS` if you wish.
 2. Extract the archive. You get a folder `RMSPA` containing `app.R`,
@@ -114,8 +114,9 @@ The Step 1 panel reports the number of Missing (NoData) cells and the declared
 NoData value, so you can check whether missing data is represented before
 running.
 
-The interface reports the image size, data type, projection and the pixel
-values it found, and explains why an image cannot be processed. All
+The interface reports the image size, data type, projection, the pixel
+values, and the number of missing (NoData) cells, and explains why an image
+cannot be processed. All
 intermediate files are written to a temporary directory, so the folder
 `RMSPA` can be read-only.
 
@@ -186,7 +187,7 @@ the check manually with **Check for updates**; the last result is cached for
 offline use. The new version is downloaded
 from the GitHub release, verified to contain the announced version and
 unpacked **next to** the current installation, for example
-`RMSPA-2.2.11/`. Close RMSPA, start `app.R` from the new folder, and delete the
+`RMSPA-2.2.12/`. Close RMSPA, start `app.R` from the new folder, and delete the
 old folder once the new version works. The current installation is never
 modified by an update.
 

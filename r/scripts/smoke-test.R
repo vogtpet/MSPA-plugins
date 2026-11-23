@@ -161,6 +161,11 @@ check("missing cells are counted",
 check("the NoData value is reported",
       isTRUE(all.equal(info_na$info$nodata, 255)))
 
+## In GTB mode value 0 is the missing class.
+info_ex <- mspa_inspect("examples/input.tif", encoding = "gtb")
+check("value 0 counts as missing in GTB mode",
+      isTRUE(info_ex$ok) && as.numeric(info_ex$info$missing) == 270)
+
 ## --- summary ----------------------------------------------------------------
 ## --- 5. output naming -------------------------------------------------------
 cat("\n[5] output naming\n")

@@ -70,8 +70,8 @@ mspa_check_raster <- function(r, encoding = c("gtb", "mask"),
   ## terra::freq() omits NA cells; the difference to ncell is the number of
   ## missing cells (this also works if a terra version includes NA rows).
   na_rows <- is.na(freq$value)
-  missing <- terra::ncell(r) - sum(freq$count[!na_rows])
-  if (!is.finite(missing) || missing < 0) missing <- 0
+  na_cells <- terra::ncell(r) - sum(freq$count[!na_rows])
+  if (!is.finite(na_cells) || na_cells < 0) na_cells <- 0
   freq <- freq[!na_rows, , drop = FALSE]
   values <- sort(unique(freq$value))
 
@@ -115,6 +115,14 @@ mspa_check_raster <- function(r, encoding = c("gtb", "mask"),
   }
 
   fg_count <- sum(freq$count[freq$value == fg_value])
+
+  ## In the GTB encoding, value 0 is the missing class; NoData cells are
+  ## missing too. In mask mode only the NoData cells are missing.
+  missing <- na_cells
+  if (identical(encoding, "gtb")) {
+    missing <- missing + sum(freq$count[freq$value == 0])
+  }
+
   info <- list(
     rows = terra::nrow(r),
     cols = terra::ncol(r),
@@ -125,6 +133,7 @@ mspa_check_raster <- function(r, encoding = c("gtb", "mask"),
     values = freq[, c("value", "count"), drop = FALSE],
     foreground = fg_count,
     missing = missing,
+    na_cells = na_cells,
     nodata = nodata,
     disk = ncell > MSPA_DISK_PIXELS
   )
