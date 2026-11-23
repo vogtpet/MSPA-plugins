@@ -96,6 +96,16 @@ testServer(app, {
   check("input accepted", isTRUE(state$info$ok),
         if (is.null(state$info)) "no input info" else state$info$message)
 
+  ## Render the Step 1 panel: catches vector/scalar mistakes in the summary.
+  info_html <- tryCatch({
+    paste(as.character(output$inputInfo), collapse = "")
+  }, error = function(e) NULL)
+  check("Step 1 panel renders", !is.null(info_html))
+  if (!is.null(info_html)) {
+    check("value 0 is marked as missing",
+          grepl("0 (270, missing)", info_html, fixed = TRUE))
+  }
+
   session$setInputs(selectFolder = list(root = "Home", path = ".rmspa-callback-test"))
   output_file <- file.path(outdir, "input_8_1_1_1.tif")
   if (file.exists(output_file)) unlink(output_file)

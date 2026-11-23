@@ -4,6 +4,16 @@ RMSPA plugin versions follow [Semantic Versioning](https://semver.org/) and
 are independent of the MSPA version. The MSPA version wrapped by a release is
 stored in `MSPA_VERSION`.
 
+## [2.2.13] - 2026-11-23
+
+### Fixed
+
+* Selecting an image failed with `Error: 'length = 3' in coercion to
+  'logical(1)'` in the Step 1 panel: the missing-class annotation combined a
+  scalar `&&` with the vector of pixel values. The annotation is now
+  vectorized, and the server test renders the panel and checks the text.
+* The pixel counts are no longer space-padded in the Step 1 panel.
+
 ## [2.2.12] - 2026-11-23
 
 ### Fixed

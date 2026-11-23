@@ -269,11 +269,14 @@ server <- function(input, output, session) {
     }
     i <- info$info
     values <- i$values
-    shown <- paste(sprintf(
-      "%d (%s%s)", values$value,
-      format(values$count, big.mark = ","),
-      if (identical(i$encoding, "gtb") && values$value == 0) ", missing" else ""),
-      collapse = ", ")
+    mark <- rep("", length(values$value))
+    if (identical(i$encoding, "gtb")) {
+      mark[values$value == 0] <- ", missing"
+    }
+    shown <- paste(sprintf("%d (%s%s)", values$value,
+                           format(values$count, big.mark = ",", trim = TRUE),
+                           mark),
+                   collapse = ", ")
     div(class = "rmspa-info",
         tags$div(sprintf("Size: %s x %s pixels (%.1f million)",
                          format(i$rows, big.mark = ","),
