@@ -27,8 +27,18 @@ try:
 except ImportError:
     from urllib2 import urlopen  # Python 2
 
+try:
+    # ArcGIS Pro ships GDAL with the Python bindings (osgeo). Use it for the
+    # TIFF conversion; the bundled GDAL executable is only a fallback for
+    # ArcGIS Desktop.
+    from osgeo import gdal
+    HAS_GDAL_PYTHON = True
+except ImportError:
+    gdal = None
+    HAS_GDAL_PYTHON = False
 
-PLUGIN_VERSION = "2.1.0"
+
+PLUGIN_VERSION = "2.2.0"
 UPDATE_URL = ("https://raw.githubusercontent.com/vogtpet/MSPA-plugins/"
               "main/arcgis/VERSION")
 RELEASE_URL = "https://github.com/vogtpet/MSPA-plugins/releases/tag/arcgis-v"
@@ -172,6 +182,28 @@ class MSPA(object):
         return
 
     @staticmethod
+    def prepare_input_gdal(src, dst):
+        """Normalise the input with ArcGIS Pro's GDAL Python bindings."""
+        gdal.UseExceptions()
+        gdal.Translate(
+            dst, src,
+            options=gdal.TranslateOptions(
+                format="GTiff",
+                creationOptions=["TILED=NO", "PROFILE=BASELINE", "COMPRESS=LZW"]))
+
+    @staticmethod
+    def write_result_gdal(src, dst, bounds, tags):
+        """Write the result with georeferencing and TIFF metadata."""
+        gdal.UseExceptions()
+        gdal.Translate(
+            dst, src,
+            options=gdal.TranslateOptions(
+                format="GTiff",
+                outputBounds=bounds,
+                creationOptions=["COMPRESS=LZW"],
+                metadataOptions=tags))
+
+    @staticmethod
     def run_tool(args, cwd):
         """Run an executable without a shell and return (status, output)."""
         try:
@@ -295,13 +327,30 @@ class MSPA(object):
 
         resources = os.path.join(self.plugin_dir, "resources")
         gdal_dir = os.path.join(resources, "gdal")
-        gdal = os.path.join(gdal_dir, "gdal_translate.exe")
+        gdal_exe = os.path.join(gdal_dir, "gdal_translate.exe")
         mspa = os.path.join(resources, "mspa_win64.exe")
-        for tool in (gdal, mspa):
-            if not os.path.isfile(tool):
-                messages.AddErrorMessage(
-                    "The plugin is incomplete; missing: " + tool)
-                sys.exit(0)
+
+        if not os.path.isfile(mspa):
+            messages.AddErrorMessage(
+                "The plugin is incomplete; missing: " + mspa)
+            sys.exit(0)
+
+        use_gdal_python = HAS_GDAL_PYTHON
+        if not use_gdal_python and not os.path.isfile(gdal_exe):
+            messages.AddErrorMessage(
+                "This ArcGIS installation has no GDAL Python bindings and the "
+                "bundled gdal_translate.exe is missing. Use ArcGIS Pro 3.x or "
+                "reinstall the plugin.")
+            sys.exit(0)
+        if use_gdal_python:
+            try:
+                messages.AddMessage("Using the built-in GDAL " + gdal.__version__)
+            except Exception:
+                messages.AddMessage("Using the built-in GDAL.")
+        else:
+            messages.AddWarningMessage(
+                "Using the bundled legacy GDAL. It requires the Microsoft "
+                "Visual C++ 2013 x64 Redistributable.")
 
         workdir = tempfile.mkdtemp(prefix="mspa_")
         tmp_in = os.path.join(workdir, "in.tif")
@@ -309,14 +358,25 @@ class MSPA(object):
 
         try:
             messages.AddMessage("Preparing the input image ...")
-            status, output = self.run_tool(
-                [gdal, "-strict", "-co", "TILED=NO", "-co", "PROFILE=BASELINE",
-                 "-co", "COMPRESS=LZW", filepath, tmp_in], gdal_dir)
+            if use_gdal_python:
+                try:
+                    self.prepare_input_gdal(filepath, tmp_in)
+                    status, output = (0 if os.path.isfile(tmp_in) else 1), ""
+                except Exception as exc:
+                    status, output = 1, str(exc)
+            else:
+                status, output = self.run_tool(
+                    [gdal_exe, "-strict", "-co", "TILED=NO",
+                     "-co", "PROFILE=BASELINE", "-co", "COMPRESS=LZW",
+                     filepath, tmp_in], gdal_dir)
             if status != 0 or not os.path.isfile(tmp_in):
+                hint = ""
+                if not use_gdal_python:
+                    hint = ("\n\nIf gdal_translate.exe cannot start, install "
+                            "the Microsoft Visual C++ 2013 x64 Redistributable.")
                 messages.AddErrorMessage(
-                    "The input image could not be prepared for MSPA:\n" + output +
-                    "\n\nIf gdal_translate.exe cannot start, install the "
-                    "Microsoft Visual C++ 2013 x64 Redistributable.")
+                    "The input image could not be prepared for MSPA:\n"
+                    + output + hint)
                 sys.exit(0)
 
             messages.AddMessage(
@@ -332,25 +392,41 @@ class MSPA(object):
                     "MSPA could not process the image:\n" + output)
                 sys.exit(0)
 
-            xmin = arcpy.GetRasterProperties_management(
-                filepath, "LEFT").getOutput(0)
-            xmax = arcpy.GetRasterProperties_management(
-                filepath, "RIGHT").getOutput(0)
-            ymin = arcpy.GetRasterProperties_management(
-                filepath, "BOTTOM").getOutput(0)
-            ymax = arcpy.GetRasterProperties_management(
-                filepath, "TOP").getOutput(0)
+            xmin = float(arcpy.GetRasterProperties_management(
+                filepath, "LEFT").getOutput(0))
+            xmax = float(arcpy.GetRasterProperties_management(
+                filepath, "RIGHT").getOutput(0))
+            ymin = float(arcpy.GetRasterProperties_management(
+                filepath, "BOTTOM").getOutput(0))
+            ymax = float(arcpy.GetRasterProperties_management(
+                filepath, "TOP").getOutput(0))
 
             messages.AddMessage("Writing the result ...")
-            status, output = self.run_tool(
-                [gdal, "-strict",
-                 "-a_ullr", str(xmin), str(ymax), str(xmax), str(ymin),
-                 "-mo", "TIFFTAG_DATETIME=" + strftime("%Y:%m:%d %H:%M:%S"),
-                 "-mo", "TIFFTAG_DOCUMENTNAME=" + docname,
-                 "-mo", ("TIFFTAG_IMAGEDESCRIPTION=GTB_MSPA, "
-                         "https://forest.jrc.ec.europa.eu/en/activities/lpa/gtb/ "
-                         + params_tag),
-                 "-co", "COMPRESS=LZW", tmp_out, movedfile], gdal_dir)
+            if use_gdal_python:
+                tags = [
+                    "TIFFTAG_DATETIME=" + strftime("%Y:%m:%d %H:%M:%S"),
+                    "TIFFTAG_DOCUMENTNAME=" + docname,
+                    ("TIFFTAG_IMAGEDESCRIPTION=GTB_MSPA, "
+                     "https://forest.jrc.ec.europa.eu/en/activities/lpa/gtb/ "
+                     + params_tag),
+                ]
+                try:
+                    self.write_result_gdal(
+                        tmp_out, movedfile,
+                        [xmin, ymin, xmax, ymax], tags)
+                    status, output = (0 if os.path.isfile(movedfile) else 1), ""
+                except Exception as exc:
+                    status, output = 1, str(exc)
+            else:
+                status, output = self.run_tool(
+                    [gdal_exe, "-strict",
+                     "-a_ullr", str(xmin), str(ymax), str(xmax), str(ymin),
+                     "-mo", "TIFFTAG_DATETIME=" + strftime("%Y:%m:%d %H:%M:%S"),
+                     "-mo", "TIFFTAG_DOCUMENTNAME=" + docname,
+                     "-mo", ("TIFFTAG_IMAGEDESCRIPTION=GTB_MSPA, "
+                             "https://forest.jrc.ec.europa.eu/en/activities/lpa/gtb/ "
+                             + params_tag),
+                     "-co", "COMPRESS=LZW", tmp_out, movedfile], gdal_dir)
             if status != 0 or not os.path.isfile(movedfile):
                 messages.AddErrorMessage(
                     "The result could not be written:\n" + output)

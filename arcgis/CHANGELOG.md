@@ -5,6 +5,22 @@ and are independent of the MSPA version. The MSPA version wrapped by a release
 is stored in `MSPA_VERSION`; the binary release it is taken from is in
 `MSPA_RELEASE`.
 
+## [2.2.0] - 2026-11-23
+
+### Changed
+
+* ArcGIS Pro uses its built-in GDAL 3.x through the `osgeo` Python bindings
+  for the TIFF conversion. The legacy `gdal_translate.exe` (and its Visual
+  C++ 2013 runtime requirement) is no longer used by ArcGIS Pro.
+* The bundled legacy GDAL is only a fallback for ArcGIS Desktop 10.x; a
+  warning is shown when it is used.
+
+### Fixed
+
+* The README links to the ArcGIS release tag and explains how to add the
+  toolbox in ArcGIS Pro (Catalog → Toolboxes → Add Toolbox), including the
+  project template option.
+
 ## [2.1.0] - 2026-11-23
 
 ### Added

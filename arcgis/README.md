@@ -6,7 +6,7 @@ wrapping the MSPA 2.4 command line tool from
 
 | | |
 |---|---|
-| **Plugin version** | 2.1.0 |
+| **Plugin version** | 2.2.0 |
 | **MSPA version** | 2.4 (release 2.4.1) |
 | **Host** | ArcGIS Pro or ArcGIS Desktop 10.3–10.9 (64-bit Windows) |
 
@@ -17,17 +17,23 @@ Windows ARM they run under emulation and use the x86_64 MSPA executable.
 
 ## Installation
 
-1. Download `MSPA-ArcGIS-2.1.0.zip` from the
-   [releases page](https://github.com/vogtpet/MSPA-plugins/releases) and verify
-   it against `SHA256SUMS` if you wish.
+1. Download `MSPA-ArcGIS-2.2.0.zip` from the
+   [ArcGIS release](https://github.com/vogtpet/MSPA-plugins/releases/tag/arcgis-v2.2.0)
+   and verify it against `SHA256SUMS` if you wish.
 2. Extract the archive.
 3. Run `install_MSPA-ToolboxArc_Windows.bat`. It copies the `mspa` folder to
    *My Toolboxes* for every detected ArcGIS Desktop installation and to
    `%USERPROFILE%\MSPA-Toolbox` for ArcGIS Pro.
-4. Restart ArcGIS, open the toolbox (`MSPA.pyt`) and add it to ArcToolbox.
+4. **ArcGIS Pro:** open the Catalog pane, right-click **Toolboxes → Add
+   Toolbox** and select `%USERPROFILE%\MSPA-Toolbox\MSPA.pyt`. ArcGIS Pro 3.x
+   does not have the ArcMap *My Toolboxes* folder. To make the toolbox
+   available in every new project, add it to your project template (for
+   example `...\ArcGIS\Template\template.atbx`).
+   **ArcGIS Desktop:** add `MSPA.pyt` to ArcToolbox (the installer copied it to
+   *My Toolboxes*).
 
 You can also copy the `mspa` folder manually to a folder of your choice and
-add `MSPA.pyt` to ArcToolbox.
+add `MSPA.pyt` there.
 
 ## Input
 
@@ -80,11 +86,13 @@ archive, extract it and run the installer again.
 
 ## Known limitations
 
-* The archive bundles a legacy GDAL 1.11 (2017) `gdal_translate.exe` for the
-  TIFF conversion. It works for the MSPA input/output, but it is old and will
-  be replaced in a later release. It requires the **Microsoft Visual C++ 2013
-  x64 Redistributable** (`vcredist_x64.exe`); if `gdal_translate.exe` cannot
-  start, install that runtime.
+* **ArcGIS Pro** uses its built-in GDAL 3.x through the `osgeo` Python
+  bindings for the TIFF conversion; no external GDAL or Visual C++ runtime is
+  needed.
+* **ArcGIS Desktop 10.x** has no `osgeo`; it falls back to the bundled legacy
+  GDAL 1.11 (2017) `gdal_translate.exe`, which requires the Microsoft Visual
+  C++ 2013 x64 Redistributable (`vcredist_x64.exe`). ArcGIS Desktop is legacy;
+  ArcGIS Pro is recommended.
 * Batch processing of several files is not available; use GTB or GWB for that.
 * Windows x86_64 only; macOS and Linux are served by the R plugin and the
   standalone tool.
