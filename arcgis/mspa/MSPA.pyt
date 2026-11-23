@@ -48,7 +48,7 @@ except Exception as exc:
     GDAL_IMPORT_ERROR = str(exc)
 
 
-PLUGIN_VERSION = "2.2.1"
+PLUGIN_VERSION = "2.2.2"
 UPDATE_URL = ("https://raw.githubusercontent.com/vogtpet/MSPA-plugins/"
               "main/arcgis/VERSION")
 RELEASE_URL = "https://github.com/vogtpet/MSPA-plugins/releases/tag/arcgis-v"
@@ -202,16 +202,30 @@ class MSPA(object):
                 creationOptions=["TILED=NO", "PROFILE=BASELINE", "COMPRESS=LZW"]))
 
     @staticmethod
-    def write_result_gdal(src, dst, bounds, tags):
-        """Write the result with georeferencing and TIFF metadata."""
+    def write_result_gdal(src, dst, extent, tags):
+        """Write the result with georeferencing and TIFF metadata.
+
+        The MSPA output has no georeferencing. Assign the extent of the input
+        image explicitly (like gdal_translate -a_ullr) instead of using
+        outputBounds, which expects (ulx, uly, lrx, lry) and resamples.
+        """
         gdal.UseExceptions()
         gdal.Translate(
             dst, src,
             options=gdal.TranslateOptions(
                 format="GTiff",
-                outputBounds=bounds,
                 creationOptions=["COMPRESS=LZW"],
                 metadataOptions=tags))
+        dataset = gdal.Open(dst, gdal.GA_Update)
+        if dataset is None:
+            raise RuntimeError("the result image could not be reopened")
+        xmin, ymin, xmax, ymax = extent
+        width = float(dataset.RasterXSize)
+        height = float(dataset.RasterYSize)
+        dataset.SetGeoTransform((xmin, (xmax - xmin) / width, 0.0,
+                                 ymax, 0.0, -(ymax - ymin) / height))
+        dataset.FlushCache()
+        dataset = None
 
     @staticmethod
     def run_tool(args, cwd):
@@ -428,7 +442,7 @@ class MSPA(object):
                 try:
                     self.write_result_gdal(
                         tmp_out, movedfile,
-                        [xmin, ymin, xmax, ymax], tags)
+                        (xmin, ymin, xmax, ymax), tags)
                     status, output = (0 if os.path.isfile(movedfile) else 1), ""
                 except Exception as exc:
                     status, output = 1, str(exc)

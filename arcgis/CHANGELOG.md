@@ -5,6 +5,15 @@ and are independent of the MSPA version. The MSPA version wrapped by a release
 is stored in `MSPA_VERSION`; the binary release it is taken from is in
 `MSPA_RELEASE`.
 
+## [2.2.2] - 2026-11-23
+
+### Fixed
+
+* The result was flipped vertically. The GDAL Python path passed the bounds to
+  `outputBounds` in the wrong order (GDAL expects `ulx uly lrx lry`) and let
+  GDAL warp the raster. The result is now copied and the geotransform is
+  assigned explicitly, exactly like `gdal_translate -a_ullr`.
+
 ## [2.2.1] - 2026-11-23
 
 ### Added
