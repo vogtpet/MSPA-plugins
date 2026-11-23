@@ -15,7 +15,7 @@ for %%V in (10.3 10.4 10.5 10.6 10.7 10.8 10.9) do (
 )
 
 if exist "%ProgramFiles%\ArcGIS\Pro\bin\ArcGISPro.exe" (
-  call :install "Pro" "%USERPROFILE%\MSPA-Toolbox"
+  call :install "Pro" "%LOCALAPPDATA%\ESRI\ArcGISPro\Toolboxes"
 )
 
 if "!_num!"=="0" (

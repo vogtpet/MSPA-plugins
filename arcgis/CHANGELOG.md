@@ -5,6 +5,15 @@ and are independent of the MSPA version. The MSPA version wrapped by a release
 is stored in `MSPA_VERSION`; the binary release it is taken from is in
 `MSPA_RELEASE`.
 
+## [2.2.3] - 2026-11-23
+
+### Changed
+
+* The ArcGIS Pro installation target is now
+  `%LOCALAPPDATA%\ESRI\ArcGISPro\Toolboxes` instead of
+  `%USERPROFILE%\MSPA-Toolbox`, so the toolbox is picked up by ArcGIS Pro
+  directly.
+
 ## [2.2.2] - 2026-11-23
 
 ### Fixed
