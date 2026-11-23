@@ -5,6 +5,15 @@ and are independent of the MSPA version. The MSPA version wrapped by a release
 is stored in `MSPA_VERSION`; the binary release it is taken from is in
 `MSPA_RELEASE`.
 
+## [2.2.4] - 2026-11-23
+
+### Fixed
+
+* The ArcGIS Pro installer could not copy `MSPA.pyt`: `xcopy` prompted for a
+  file or directory because the target subfolder did not exist. The installer
+  now creates `…\Toolboxes\mspa`, copies the contents and reports whether
+  `MSPA.pyt` arrived.
+
 ## [2.2.3] - 2026-11-23
 
 ### Changed

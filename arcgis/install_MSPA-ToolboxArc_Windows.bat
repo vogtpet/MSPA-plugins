@@ -30,9 +30,17 @@ exit /b 0
 
 :install
 echo Installing for ArcGIS %~1
+echo   target: %~2
 if not exist "%~2" md "%~2"
-xcopy "mspa" "%~2\mspa" /Y /E /R /Q
+if not exist "%~2\mspa" md "%~2\mspa"
+xcopy "mspa\*" "%~2\mspa\" /Y /E /R /Q
+if errorlevel 1 echo   WARNING: copying the toolbox reported an error.
 xcopy "MSPA_Guide.pdf" "%~2\" /Y /R /Q
 xcopy "README.md" "%~2\" /Y /R /Q
+if exist "%~2\mspa\MSPA.pyt" (
+  echo   MSPA.pyt copied successfully.
+) else (
+  echo   ERROR: MSPA.pyt was not copied to "%~2\mspa".
+)
 set /a _num+=1
 exit /b 0
