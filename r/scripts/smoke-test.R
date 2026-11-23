@@ -146,6 +146,21 @@ check("values above 2 are rejected",
 check("non-GeoTIFF names are rejected",
       !isTRUE(mspa_inspect("examples/input.tif", name = "input.png")$ok))
 
+## Missing / NoData reporting
+na_file <- file.path(tmp, "na.tif")
+nra <- terra::rast(nrows = 20, ncols = 20, xmin = 0, xmax = 20,
+                   ymin = 0, ymax = 20, crs = "EPSG:4326")
+terra::values(nra) <- 1L
+nra[1, 1] <- 2L
+nra[1, 2] <- NA
+terra::writeRaster(nra, na_file, datatype = "INT1U", NAflag = 255,
+                   overwrite = TRUE)
+info_na <- mspa_inspect(na_file, encoding = "gtb")
+check("missing cells are counted",
+      isTRUE(info_na$ok) && as.numeric(info_na$info$missing) == 1)
+check("the NoData value is reported",
+      isTRUE(all.equal(info_na$info$nodata, 255)))
+
 ## --- summary ----------------------------------------------------------------
 ## --- 5. output naming -------------------------------------------------------
 cat("\n[5] output naming\n")

@@ -4,6 +4,23 @@ RMSPA plugin versions follow [Semantic Versioning](https://semver.org/) and
 are independent of the MSPA version. The MSPA version wrapped by a release is
 stored in `MSPA_VERSION`.
 
+## [2.2.11] - 2026-11-23
+
+### Added
+
+* The Step 1 information panel reports the number of Missing (NoData) cells
+  and the declared NoData value, so it is visible whether missing data is
+  represented before running.
+
+### Changed
+
+* Clarified the input encoding labels: GTB (0 = missing/nodata, 1 = background,
+  2 = foreground) and binary mask (0 = background, 1 = foreground; declared
+  NoData becomes missing).
+* The README states the 400 million pixel limit as a total (about
+  20,000 x 20,000 for a square image) and explains mask mode and its
+  limitation.
+
 ## [2.2.10] - 2026-11-20
 
 ### Fixed

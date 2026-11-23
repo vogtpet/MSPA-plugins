@@ -118,11 +118,13 @@ ui <- fluidPage(
               buttonLabel = list(icon("folder"), " Browse...")),
     radioButtons("encoding", "Input encoding",
                  choices = c(
-                   "GTB: 1 = background, 2 = foreground" = "gtb",
-                   "Binary mask: 0 = background, 1 = foreground" = "mask"
+                   "GTB: 0 = missing/nodata (optional), 1 = background, 2 = foreground" = "gtb",
+                   "Binary mask: 0 = background, 1 = foreground (NoData = missing)" = "mask"
                  ),
                  selected = "gtb"),
-    helpText("MSPA expects a single-band 8-bit GeoTIFF. Missing data must be 0."),
+    helpText(paste0("MSPA expects a single-band 8-bit GeoTIFF. In mask mode, ",
+                    "cells with a declared NoData value become Missing; use the ",
+                    "GTB encoding if 0 and missing must be distinguished.")),
     uiOutput("inputInfo")
   ),
 
@@ -142,7 +144,8 @@ ui <- fluidPage(
     ),
     checkboxInput("lowmem", "Low memory mode (-disk)", value = FALSE),
     helpText(sprintf(paste0("Low memory mode is switched on automatically for ",
-                            "images larger than %.0f million pixels."),
+                            "images larger than %.0f million pixels ",
+                            "(about 8,000 x 8,000)."),
                      MSPA_DISK_PIXELS / 1e6))
   ),
 
@@ -279,6 +282,12 @@ server <- function(input, output, session) {
         tags$div(sprintf("Pixel values: %s", shown)),
         tags$div(sprintf("Foreground pixels: %s",
                          format(i$foreground, big.mark = ","))),
+        tags$div(sprintf("Missing (NoData): %s",
+                         if (i$missing > 0) format(i$missing, big.mark = ",") else "none")),
+        if (i$missing > 0 && !is.na(i$nodata))
+          tags$div(sprintf("NoData value: %s", i$nodata)),
+        if (identical(i$encoding, "mask") && i$missing == 0)
+          tags$div(em("No NoData cells: 0 is treated as background.")),
         if (i$disk) tags$div(em("The image is large; low memory mode will be used."))
     )
   })

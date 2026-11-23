@@ -67,8 +67,23 @@ mspa_check_raster <- function(r, encoding = c("gtb", "mask"),
   if (is.null(freq) || nrow(freq) == 0L) {
     return(list(ok = FALSE, message = "The pixel values of the image could not be read."))
   }
-  freq <- freq[!is.na(freq$value), , drop = FALSE]
+  ## terra::freq() omits NA cells; the difference to ncell is the number of
+  ## missing cells (this also works if a terra version includes NA rows).
+  na_rows <- is.na(freq$value)
+  missing <- terra::ncell(r) - sum(freq$count[!na_rows])
+  if (!is.finite(missing) || missing < 0) missing <- 0
+  freq <- freq[!na_rows, , drop = FALSE]
   values <- sort(unique(freq$value))
+
+  ## terra::NAflag() is unreliable for some files; gdalinfo reports it.
+  nodata <- NA_real_
+  desc <- tryCatch(terra::describe(r), error = function(e) character())
+  line <- grep("NoData Value=", desc, value = TRUE)
+  if (length(line) > 0L) {
+    value <- sub(".*NoData Value=([^ ]+).*", "\\1", line[1])
+    nodata <- suppressWarnings(as.numeric(value))
+    if (!is.finite(nodata)) nodata <- NA_real_
+  }
 
   if (any(values < 0) || any(values > 2)) {
     shown <- paste(utils::head(values, 8), collapse = ", ")
@@ -109,6 +124,8 @@ mspa_check_raster <- function(r, encoding = c("gtb", "mask"),
     encoding = encoding,
     values = freq[, c("value", "count"), drop = FALSE],
     foreground = fg_count,
+    missing = missing,
+    nodata = nodata,
     disk = ncell > MSPA_DISK_PIXELS
   )
   list(ok = TRUE, message = "ok", info = info)

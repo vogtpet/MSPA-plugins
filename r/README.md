@@ -8,7 +8,7 @@ analysis is done by MSPA itself.
 
 | | |
 |---|---|
-| **Plugin version** | 2.2.10 |
+| **Plugin version** | 2.2.11 |
 | **MSPA version** | 2.4 |
 | **Host** | R ≥ 4.0 (64-bit), RStudio recommended |
 
@@ -40,7 +40,7 @@ from a clone cannot find `resources/`. If you cloned the repository, run
 `./scripts/fetch-binaries.sh` (see [Development](#development)) before
 starting the app.
 
-1. Download `RMSPA-2.2.10.zip` from the
+1. Download `RMSPA-2.2.11.zip` from the
    [releases page](https://github.com/vogtpet/MSPA-plugins/releases) and verify
    it against `SHA256SUMS` if you wish.
 2. Extract the archive. You get a folder `RMSPA` containing `app.R`,
@@ -98,14 +98,21 @@ MSPA uses the following pixel values:
 
 | Value | Meaning |
 |---|---|
-| 0 | Missing (optional) |
+| 0 | Missing / NoData (optional) |
 | 1 | Background (mandatory) |
 | 2 | Foreground (mandatory) |
 
 This is the encoding used by GuidosToolbox. If your mask uses the common
 `0 = background, 1 = foreground` convention, select **Binary mask (0/1)** as
-the input encoding; RMSPA recodes the image to the GTB convention before
-processing. The original file is never modified.
+the input encoding; RMSPA recodes `0 -> 1` (background) and `1 -> 2`
+(foreground) before processing. Cells with a declared NoData value become
+Missing (0). A plain 0/1 mask cannot distinguish a `0` that means "missing"
+from background; use the GTB encoding for that. The original file is never
+modified.
+
+The Step 1 panel reports the number of Missing (NoData) cells and the declared
+NoData value, so you can check whether missing data is represented before
+running.
 
 The interface reports the image size, data type, projection and the pixel
 values it found, and explains why an image cannot be processed. All
@@ -120,7 +127,7 @@ intermediate files are written to a temporary directory, so the folder
 | `EdgeWidth` | Effective edge width in pixels (1–5) | 1 |
 | `Transition` | Show transition pixels (1) or closed boundaries (0) | 1 |
 | `Internal` | Include internal structures and openings (1/0) | 1 |
-| Low memory | Pass `-disk` to MSPA; automatic above 65 million pixels | off |
+| Low memory | Pass `-disk` to MSPA; automatic above 65 million pixels (about 8,000 × 8,000) | off |
 
 The parameters are documented in `www/MSPA_Guide.pdf` and on the
 [MSPA homepage](https://forest.jrc.ec.europa.eu/en/activities/lpa/mspa/).
@@ -130,7 +137,8 @@ The parameters are documented in `www/MSPA_Guide.pdf` and on the
 Select the output folder and click **Start**. If a file with the same name
 already exists — same input name and parameters — RMSPA asks before
 overwriting it; the dialog can remember the choice for the rest of the session.
-Very large images (above 400 million pixels) are rejected by the interface;
+Very large images (more than 400 million pixels in total — about 20,000 ×
+20,000 for a square image) are rejected by the interface;
 use the MSPA standalone tool or GTB for those.
 
 ## Output
@@ -178,7 +186,7 @@ the check manually with **Check for updates**; the last result is cached for
 offline use. The new version is downloaded
 from the GitHub release, verified to contain the announced version and
 unpacked **next to** the current installation, for example
-`RMSPA-2.2.10/`. Close RMSPA, start `app.R` from the new folder, and delete the
+`RMSPA-2.2.11/`. Close RMSPA, start `app.R` from the new folder, and delete the
 old folder once the new version works. The current installation is never
 modified by an update.
 
