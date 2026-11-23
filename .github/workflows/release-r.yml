@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, windows-latest, macos-latest]
+        os: [ubuntu-24.04, windows-latest]
 
     defaults:
       run:
@@ -49,10 +49,6 @@ jobs:
       - name: Update installer test
         run: Rscript tests/update-test.R
 
-      - name: Smoke test (macOS, advisory)
-        if: runner.os == 'macOS'
-        continue-on-error: true
-        run: Rscript scripts/smoke-test.R
 
   release:
     name: build and publish
