@@ -20,14 +20,14 @@ libdeflate, Lerc). The upstream notices are retained in that repository.
 
 <https://github.com/ebiggers/libdeflate>
 Copyright (C) 2016 Eric Biggers, 2024 Google LLC.
-License: MIT. Full text: [licenses/MIT.txt](licenses/MIT.txt).
+License: MIT. Full text: [third-party-licenses/MIT.txt](third-party-licenses/MIT.txt).
 
 ## Lerc (linked statically)
 
 <https://github.com/Esri/lerc>
 Copyright (C) Esri.
 License: Apache License 2.0. Full text:
-[licenses/Apache-2.0.txt](licenses/Apache-2.0.txt).
+[third-party-licenses/Apache-2.0.txt](third-party-licenses/Apache-2.0.txt).
 
 ## R packages
 

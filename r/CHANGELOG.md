@@ -4,6 +4,14 @@ RMSPA plugin versions follow [Semantic Versioning](https://semver.org/) and
 are independent of the MSPA version. The MSPA version wrapped by a release is
 stored in `MSPA_VERSION`.
 
+## [2.2.14] - 2026-11-23
+
+### Changed
+
+* Renamed `licenses/` to `third-party-licenses/` to make clear that these are
+  the notices of the bundled MSPA libraries (libdeflate: MIT, Lerc:
+  Apache-2.0), not an alternative licence for RMSPA.
+
 ## [2.2.13] - 2026-11-23
 
 ### Fixed

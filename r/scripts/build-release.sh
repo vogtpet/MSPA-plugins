@@ -38,7 +38,7 @@ mkdir -p "$stage/RMSPA"
 cp app.R VERSION MSPA_VERSION README.md CHANGELOG.md LICENSE \
    THIRD-PARTY-NOTICES.md "$stage/RMSPA/"
 [ -f MSPA_RELEASE ] && cp MSPA_RELEASE "$stage/RMSPA/"
-cp -R R www examples resources licenses "$stage/RMSPA/"
+cp -R R www examples resources third-party-licenses "$stage/RMSPA/"
 
 # Always package the current MSPA guide. Fall back to the copy in www/ when
 # the JRC server is unavailable (offline builds).

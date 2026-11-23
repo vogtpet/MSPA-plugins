@@ -8,7 +8,7 @@ analysis is done by MSPA itself.
 
 | | |
 |---|---|
-| **Plugin version** | 2.2.13 |
+| **Plugin version** | 2.2.14 |
 | **MSPA version** | 2.4 |
 | **Host** | R ≥ 4.0 (64-bit), RStudio recommended |
 
@@ -40,7 +40,7 @@ from a clone cannot find `resources/`. If you cloned the repository, run
 `./scripts/fetch-binaries.sh` (see [Development](#development)) before
 starting the app.
 
-1. Download `RMSPA-2.2.13.zip` from the
+1. Download `RMSPA-2.2.14.zip` from the
    [releases page](https://github.com/vogtpet/MSPA-plugins/releases) and verify
    it against `SHA256SUMS` if you wish.
 2. Extract the archive. You get a folder `RMSPA` containing `app.R`,
@@ -187,7 +187,7 @@ the check manually with **Check for updates**; the last result is cached for
 offline use. The new version is downloaded
 from the GitHub release, verified to contain the announced version and
 unpacked **next to** the current installation, for example
-`RMSPA-2.2.13/`. Close RMSPA, start `app.R` from the new folder, and delete the
+`RMSPA-2.2.14/`. Close RMSPA, start `app.R` from the new folder, and delete the
 old folder once the new version works. The current installation is never
 modified by an update.
 
@@ -273,5 +273,5 @@ FOR A PARTICULAR PURPOSE.
 
 The bundled MSPA binaries and the third-party libraries are described in
 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md); the full license texts are in
-[`licenses/`](licenses/). See also the [third-party components section of
+[`third-party-licenses/`](third-party-licenses/). See also the [third-party components section of
 MSPAstandalone](https://github.com/vogtpet/MSPAstandalone#third-party-components).
