@@ -5,6 +5,15 @@ and are independent of the MSPA version. The MSPA version wrapped by a release
 is stored in `MSPA_VERSION`; the binary release it is taken from is in
 `MSPA_RELEASE`.
 
+## [2.3.1] - 2026-11-24
+
+### Changed
+
+* README: the installation instructions are split by host application.
+  ArcGIS Pro uses **Catalog → Favorites → Add Item → Toolbox**; ArcGIS
+  Desktop 10.x uses **ArcToolbox → right-click → Add Toolbox…** and then
+  selects `MSPA.pyt` from the permanent folder.
+
 ## [2.3.0] - 2026-11-24
 
 ### Changed

@@ -48,7 +48,7 @@ except Exception as exc:
     GDAL_IMPORT_ERROR = str(exc)
 
 
-PLUGIN_VERSION = "2.3.0"
+PLUGIN_VERSION = "2.3.1"
 UPDATE_URL = ("https://raw.githubusercontent.com/vogtpet/MSPA-plugins/"
               "main/arcgis/VERSION")
 RELEASE_URL = "https://github.com/vogtpet/MSPA-plugins/releases/tag/arcgis-v"

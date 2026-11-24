@@ -6,7 +6,7 @@ wrapping the MSPA 2.4 command line tool from
 
 | | |
 |---|---|
-| **Plugin version** | 2.3.0 |
+| **Plugin version** | 2.3.1 |
 | **MSPA version** | 2.4 (release 2.4.1) |
 | **Host** | ArcGIS Pro or ArcGIS Desktop 10.3–10.9 (64-bit Windows) |
 
@@ -17,13 +17,18 @@ Windows ARM they run under emulation and use the x86_64 MSPA executable.
 
 ## Installation
 
-1. Download `MSPA-ArcGIS-2.3.0.zip` from the
-   [ArcGIS release](https://github.com/vogtpet/MSPA-plugins/releases/tag/arcgis-v2.3.0)
+1. Download `MSPA-ArcGIS-2.3.1.zip` from the
+   [ArcGIS release](https://github.com/vogtpet/MSPA-plugins/releases/tag/arcgis-v2.3.1)
    and verify it against `SHA256SUMS` if you wish.
 2. Extract the archive to a **permanent** folder, for example
    `C:\Users\<user>\Documents\ArcGIS\MSPA-ArcGIS`. The `mspa` folder with
    `MSPA.pyt` and its `resources` must stay together; do not move only the
    `.pyt`.
+
+Then follow the section for your host application.
+
+### ArcGIS Pro
+
 3. Open ArcGIS Pro and the **Catalog** pane (*View → Catalog Pane*).
 4. Open **Favorites** and choose **Add Item → Toolbox**
    (or right-click **Favorites → Add Item → Toolbox**).
@@ -37,9 +42,13 @@ Alternatively, right-click **Toolboxes → Add Toolbox…**, select
 ArcGIS Pro does not scan a special "My Toolboxes" folder, so adding the
 toolbox to Favorites is the reliable installation.
 
-**ArcGIS Desktop 10.3–10.9:** copy the `mspa` folder to a permanent location
-(or to `%APPDATA%\ESRI\Desktop10.x\ArcToolbox\My Toolboxes`), open
-ArcToolbox → **Add Toolbox** and select `MSPA.pyt`.
+### ArcGIS Desktop 10.3–10.9
+
+3. Open the **ArcToolbox** window.
+4. Right-click **ArcToolbox → Add Toolbox…**
+5. Navigate to `...\MSPA-ArcGIS\mspa\MSPA.pyt` and select it.
+6. The **MSPA Tools** toolbox now appears in the list of all available
+   toolboxes. Run the **MSPA** tool from there.
 
 If an earlier version was installed, remove the old toolbox entry (and the old
 `%USERPROFILE%\MSPA-Toolbox` folder if it exists) before adding the new one.
