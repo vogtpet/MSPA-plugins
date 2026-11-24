@@ -10,9 +10,9 @@ is stored in `MSPA_VERSION`; the binary release it is taken from is in
 ### Changed
 
 * README: the installation instructions are split by host application.
-  ArcGIS Pro uses **Catalog → Favorites → Add Item → Toolbox**; ArcGIS
-  Desktop 10.x uses **ArcToolbox → right-click → Add Toolbox…** and then
-  selects `MSPA.pyt` from the permanent folder.
+  ArcGIS Pro uses **Catalog → Favorites → Add Item → Toolbox → Add
+  Toolbox**; ArcGIS Desktop 10.x uses **ArcToolbox → right-click → Add
+  Toolbox…** and then selects `MSPA.pyt` from the permanent folder.
 
 ## [2.3.0] - 2026-11-24
 

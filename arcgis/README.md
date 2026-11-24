@@ -30,14 +30,14 @@ Then follow the section for your host application.
 ### ArcGIS Pro
 
 3. Open ArcGIS Pro and the **Catalog** pane (*View → Catalog Pane*).
-4. Open **Favorites** and choose **Add Item → Toolbox**
-   (or right-click **Favorites → Add Item → Toolbox**).
+4. On the **Favorites** tab choose **Add Item → Toolbox → Add Toolbox**.
 5. Browse to `...\MSPA-ArcGIS\mspa\MSPA.pyt` and add it.
-6. The **MSPA** toolbox now appears under Favorites and is available in the
-   project. Run the **MSPA** tool from there.
+6. The **MSPA** toolbox now appears under Favorites and is also available in
+   the project **Toolboxes**. Run the **MSPA** tool from there.
 
-Alternatively, right-click **Toolboxes → Add Toolbox…**, select
-`MSPA.pyt`, and then add the toolbox to Favorites.
+Alternatively, on the **Project** tab of the Catalog pane, right-click
+**Toolboxes → Add Toolbox**, select `MSPA.pyt`, and then add the toolbox to
+Favorites.
 
 ArcGIS Pro does not scan a special "My Toolboxes" folder, so adding the
 toolbox to Favorites is the reliable installation.
