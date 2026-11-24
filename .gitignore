@@ -2,7 +2,6 @@
 r/dist/
 r/resources/
 arcgis/dist/
-arcgis/mspa/resources/gdal/
 arcgis/mspa/resources/mspa_win64.exe
 arcgis/mspa/resources/BINARIES.txt
 arcgis/MSPA_Guide.pdf

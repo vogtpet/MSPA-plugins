@@ -5,8 +5,7 @@
  Morphological Spatial Pattern Analysis
 
  An ArcGIS toolbox for the MSPA command line tool from MSPAstandalone.
- The MSPA binary and the legacy GDAL bundle are fetched at build time; see
- README.md.
+ The MSPA binary is fetched at build time; see README.md.
 
  This program is free software: you can redistribute it and/or modify it
  under the terms of the GNU General Public License, version 3 or later
@@ -17,6 +16,7 @@
 import arcpy
 import os
 import shutil
+import struct
 import subprocess
 import sys
 import tempfile
@@ -48,7 +48,7 @@ except Exception as exc:
     GDAL_IMPORT_ERROR = str(exc)
 
 
-PLUGIN_VERSION = "2.2.6"
+PLUGIN_VERSION = "2.3.0"
 UPDATE_URL = ("https://raw.githubusercontent.com/vogtpet/MSPA-plugins/"
               "main/arcgis/VERSION")
 RELEASE_URL = "https://github.com/vogtpet/MSPA-plugins/releases/tag/arcgis-v"
@@ -228,6 +228,97 @@ class MSPA(object):
         dataset = None
 
     @staticmethod
+    def write_world_file(path, extent, width, height):
+        """Write an ESRI world file for a raster without internal georeferencing."""
+        xmin, ymin, xmax, ymax = extent
+        pixel_x = (float(xmax) - float(xmin)) / float(width)
+        pixel_y = (float(ymax) - float(ymin)) / float(height)
+        values = [pixel_x, 0.0, 0.0, -pixel_y,
+                  float(xmin) + pixel_x / 2.0,
+                  float(ymax) - pixel_y / 2.0]
+        world = os.path.splitext(path)[0] + ".tfw"
+        with open(world, "w") as handle:
+            handle.write("\n".join("%.10f" % value for value in values))
+
+    @staticmethod
+    def remove_sidecars(path):
+        """Remove world file and auxiliary files left by an earlier run."""
+        stem = os.path.splitext(path)[0]
+        for sidecar in (stem + ".tfw", stem + ".ovr", path + ".aux.xml",
+                        path + ".ovr"):
+            try:
+                if os.path.isfile(sidecar):
+                    os.remove(sidecar)
+            except Exception:
+                pass
+
+    @staticmethod
+    def write_tiff_tags(path, tags):
+        """Add ASCII TIFF tags without GDAL.
+
+        ArcGIS writes a GeoTIFF but does not carry the GTB metadata tags that
+        GuidosToolbox uses to reload the parameters. Append a new IFD at the
+        end of the file and point the header at it; the pixel data and all
+        existing tags stay untouched.
+        """
+        with open(path, "rb") as handle:
+            data = handle.read()
+        if data[:4] == b"II*\x00":
+            endian = "<"
+        elif data[:4] == b"MM\x00*":
+            endian = ">"
+        else:
+            raise RuntimeError("the result is not a classic TIFF file")
+        if len(data) < 8:
+            raise RuntimeError("the result is not a valid TIFF file")
+        ifd_offset = struct.unpack(endian + "I", data[4:8])[0]
+        if ifd_offset + 2 > len(data):
+            raise RuntimeError("the result is not a valid TIFF file")
+        count = struct.unpack(endian + "H", data[ifd_offset:ifd_offset + 2])[0]
+        position = ifd_offset + 2
+        entries = []
+        for _ in range(count):
+            if position + 12 > len(data):
+                raise RuntimeError("the result is not a valid TIFF file")
+            entries.append(data[position:position + 12])
+            position += 12
+        if position + 4 > len(data):
+            raise RuntimeError("the result is not a valid TIFF file")
+        next_offset = struct.unpack(endian + "I", data[position:position + 4])[0]
+
+        replaced = set(tags)
+        entries = [entry for entry in entries
+                   if struct.unpack(endian + "H", entry[:2])[0] not in replaced]
+
+        base = len(data)
+        if base % 2:
+            base += 1
+        values_offset = base + 2 + 12 * (len(entries) + len(tags)) + 4
+        values = b""
+        for tag in sorted(tags):
+            payload = str(tags[tag]).encode("ascii", "replace") + b"\x00"
+            entry = struct.pack(endian + "HHI", tag, 2, len(payload))
+            if len(payload) <= 4:
+                entry += payload.ljust(4, b"\x00")
+            else:
+                entry += struct.pack(endian + "I", values_offset + len(values))
+                values += payload
+            entries.append(entry)
+        entries.sort(key=lambda entry: struct.unpack(endian + "H", entry[:2])[0])
+
+        ifd = struct.pack(endian + "H", len(entries))
+        ifd += b"".join(entries)
+        ifd += struct.pack(endian + "I", next_offset)
+
+        with open(path, "ab") as handle:
+            handle.write(b"\x00" * (base - len(data)))
+            handle.write(ifd)
+            handle.write(values)
+        with open(path, "r+b") as handle:
+            handle.seek(4)
+            handle.write(struct.pack(endian + "I", base))
+
+    @staticmethod
     def run_tool(args, cwd):
         """Run an executable without a shell and return (status, output)."""
         try:
@@ -275,8 +366,8 @@ class MSPA(object):
         dataset = arcpy.Raster(filepath)
         nbands = dataset.bandCount
         bandtype = dataset.pixelType
-        xsize = int(dataset.height)
-        ysize = int(dataset.width)
+        xsize = int(dataset.width)
+        ysize = int(dataset.height)
         pixels = xsize * ysize
 
         if nbands != 1:
@@ -350,9 +441,9 @@ class MSPA(object):
                     "ArcGIS?): " + str(exc))
                 sys.exit(0)
 
+        self.remove_sidecars(movedfile)
+
         resources = os.path.join(self.plugin_dir, "resources")
-        gdal_dir = os.path.join(resources, "gdal")
-        gdal_exe = os.path.join(gdal_dir, "gdal_translate.exe")
         mspa = os.path.join(resources, "mspa_win64.exe")
 
         if not os.path.isfile(mspa):
@@ -361,64 +452,81 @@ class MSPA(object):
             sys.exit(0)
 
         use_gdal_python = HAS_GDAL_PYTHON
-        if not use_gdal_python and not os.path.isfile(gdal_exe):
-            messages.AddErrorMessage(
-                "This ArcGIS installation has no GDAL Python bindings and the "
-                "bundled gdal_translate.exe is missing. Use ArcGIS Pro 3.x or "
-                "reinstall the plugin.")
-            sys.exit(0)
         if use_gdal_python:
             try:
                 messages.AddMessage("Using the built-in GDAL " + gdal.__version__)
             except Exception:
                 messages.AddMessage("Using the built-in GDAL.")
         else:
-            if GDAL_IMPORT_ERROR:
+            if (self.install_info.get('ProductName') == 'ArcGISPro' and
+                    GDAL_IMPORT_ERROR):
                 messages.AddWarningMessage(
                     "ArcGIS Pro's GDAL bindings could not be loaded: "
                     + GDAL_IMPORT_ERROR)
-            messages.AddWarningMessage(
-                "Using the bundled legacy GDAL. It requires the Microsoft "
-                "Visual C++ 2013 x64 Redistributable.")
+            messages.AddMessage("Using ESRI functions (no GDAL).")
 
         workdir = tempfile.mkdtemp(prefix="mspa_")
         tmp_in = os.path.join(workdir, "in.tif")
         tmp_out = os.path.join(workdir, "out.tif")
 
         try:
-            messages.AddMessage("Preparing the input image ...")
+            mspa_input = filepath
             if use_gdal_python:
+                messages.AddMessage("Preparing the input image ...")
                 try:
                     self.prepare_input_gdal(filepath, tmp_in)
-                    status, output = (0 if os.path.isfile(tmp_in) else 1), ""
                 except Exception as exc:
-                    status, output = 1, str(exc)
-            else:
-                status, output = self.run_tool(
-                    [gdal_exe, "-strict", "-co", "TILED=NO",
-                     "-co", "PROFILE=BASELINE", "-co", "COMPRESS=LZW",
-                     filepath, tmp_in], gdal_dir)
-            if status != 0 or not os.path.isfile(tmp_in):
-                hint = ""
-                if not use_gdal_python:
-                    hint = ("\n\nIf gdal_translate.exe cannot start, install "
-                            "the Microsoft Visual C++ 2013 x64 Redistributable.")
-                messages.AddErrorMessage(
-                    "The input image could not be prepared for MSPA:\n"
-                    + output + hint)
-                sys.exit(0)
+                    messages.AddErrorMessage(
+                        "The input image could not be prepared for MSPA:\n"
+                        + str(exc))
+                    sys.exit(0)
+                if not os.path.isfile(tmp_in):
+                    messages.AddErrorMessage(
+                        "The input image could not be prepared for MSPA.")
+                    sys.exit(0)
+                mspa_input = tmp_in
+
+            def run_mspa(source):
+                args = [mspa, "-i", source, "-o", "out.tif", "-odir", workdir,
+                        "-graphfg", fgconn, "-eew", edgewidth,
+                        "-transition", transition, "-internal", intext]
+                if disk:
+                    args.append("-disk")
+                return self.run_tool(args, workdir)
 
             messages.AddMessage(
                 "Running MSPA%s ..." % (" (low memory mode)" if disk else ""))
-            args = [mspa, "-i", tmp_in, "-o", "out.tif", "-odir", workdir,
-                    "-graphfg", fgconn, "-eew", edgewidth,
-                    "-transition", transition, "-internal", intext]
-            if disk:
-                args.append("-disk")
-            status, output = self.run_tool(args, workdir)
+            status, output = run_mspa(mspa_input)
+
+            if status != 0 and not use_gdal_python:
+                # MSPA could not read the input directly; let ArcGIS create a
+                # plain TIFF and try again.
+                messages.AddWarningMessage(
+                    "MSPA could not read the input directly. Converting it "
+                    "with ArcGIS and retrying ...")
+                if os.path.exists(tmp_out):
+                    try:
+                        os.remove(tmp_out)
+                    except Exception:
+                        pass
+                try:
+                    arcpy.CopyRaster_management(filepath, tmp_in)
+                except Exception as exc:
+                    messages.AddErrorMessage(
+                        "The input image could not be converted for MSPA: "
+                        + str(exc))
+                    sys.exit(0)
+                if not os.path.isfile(tmp_in):
+                    messages.AddErrorMessage(
+                        "The input image could not be converted for MSPA.")
+                    sys.exit(0)
+                status, output = run_mspa(tmp_in)
+
             if status != 0 or not os.path.isfile(tmp_out):
                 messages.AddErrorMessage(
-                    "MSPA could not process the image:\n" + output)
+                    "MSPA could not process the image:\n" + output +
+                    "\n\nIf the input is a tiled or compressed TIFF, export "
+                    "it as an uncompressed GeoTIFF and retry.")
                 sys.exit(0)
 
             xmin = float(arcpy.GetRasterProperties_management(
@@ -431,14 +539,14 @@ class MSPA(object):
                 filepath, "TOP").getOutput(0))
 
             messages.AddMessage("Writing the result ...")
+            tags = [
+                "TIFFTAG_DATETIME=" + strftime("%Y:%m:%d %H:%M:%S"),
+                "TIFFTAG_DOCUMENTNAME=" + docname,
+                ("TIFFTAG_IMAGEDESCRIPTION=GTB_MSPA, "
+                 "https://forest.jrc.ec.europa.eu/en/activities/lpa/gtb/ "
+                 + params_tag),
+            ]
             if use_gdal_python:
-                tags = [
-                    "TIFFTAG_DATETIME=" + strftime("%Y:%m:%d %H:%M:%S"),
-                    "TIFFTAG_DOCUMENTNAME=" + docname,
-                    ("TIFFTAG_IMAGEDESCRIPTION=GTB_MSPA, "
-                     "https://forest.jrc.ec.europa.eu/en/activities/lpa/gtb/ "
-                     + params_tag),
-                ]
                 try:
                     self.write_result_gdal(
                         tmp_out, movedfile,
@@ -447,21 +555,67 @@ class MSPA(object):
                 except Exception as exc:
                     status, output = 1, str(exc)
             else:
-                status, output = self.run_tool(
-                    [gdal_exe, "-strict",
-                     "-a_ullr", str(xmin), str(ymax), str(xmax), str(ymin),
-                     "-mo", "TIFFTAG_DATETIME=" + strftime("%Y:%m:%d %H:%M:%S"),
-                     "-mo", "TIFFTAG_DOCUMENTNAME=" + docname,
-                     "-mo", ("TIFFTAG_IMAGEDESCRIPTION=GTB_MSPA, "
-                             "https://forest.jrc.ec.europa.eu/en/activities/lpa/gtb/ "
-                             + params_tag),
-                     "-co", "COMPRESS=LZW", tmp_out, movedfile], gdal_dir)
+                try:
+                    # Create a world file for the ungeoreferenced result, then
+                    # let ArcGIS bake both the extent and the coordinate system
+                    # into a real GeoTIFF (no GDAL required).
+                    staged = os.path.join(workdir, "geo.tif")
+                    shutil.copyfile(tmp_out, staged)
+                    self.write_world_file(staged,
+                                          (xmin, ymin, xmax, ymax),
+                                          xsize, ysize)
+                    old_srs = arcpy.env.outputCoordinateSystem
+                    try:
+                        arcpy.env.outputCoordinateSystem = spatial_ref
+                        try:
+                            arcpy.CopyRaster_management(
+                                staged, movedfile, "COMPRESS=LZW")
+                        except Exception:
+                            # Older ArcGIS versions may reject the TIFF
+                            # creation option; write an uncompressed copy.
+                            if os.path.isfile(movedfile):
+                                os.remove(movedfile)
+                            arcpy.CopyRaster_management(staged, movedfile)
+                    finally:
+                        arcpy.env.outputCoordinateSystem = old_srs
+                    status, output = (0 if os.path.isfile(movedfile) else 1), ""
+                except Exception as exc:
+                    messages.AddWarningMessage(
+                        "The result could not be converted by ArcGIS (%s). "
+                        "Writing the TIFF with a world file instead." % exc)
+                    try:
+                        shutil.copyfile(tmp_out, movedfile)
+                        self.write_world_file(movedfile,
+                                              (xmin, ymin, xmax, ymax),
+                                              xsize, ysize)
+                        status, output = 0, ""
+                    except Exception as copy_exc:
+                        status, output = 1, str(copy_exc)
             if status != 0 or not os.path.isfile(movedfile):
                 messages.AddErrorMessage(
                     "The result could not be written:\n" + output)
                 sys.exit(0)
 
-            arcpy.DefineProjection_management(movedfile, spatial_ref)
+            try:
+                arcpy.DefineProjection_management(movedfile, spatial_ref)
+            except Exception as exc:
+                messages.AddWarningMessage(
+                    "The coordinate system could not be written into the "
+                    "result: " + str(exc))
+
+            if not use_gdal_python:
+                try:
+                    self.write_tiff_tags(movedfile, {
+                        269: docname,
+                        270: "GTB_MSPA, "
+                             "https://forest.jrc.ec.europa.eu/en/"
+                             "activities/lpa/gtb/ " + params_tag,
+                        306: strftime("%Y:%m:%d %H:%M:%S"),
+                    })
+                except Exception as exc:
+                    messages.AddWarningMessage(
+                        "The GTB metadata could not be written into the "
+                        "result: " + str(exc))
 
             try:
                 layer = arcpy.MakeRasterLayer_management(

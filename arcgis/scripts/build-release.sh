@@ -10,7 +10,6 @@ cd "$(dirname "$0")/.."
 
 version="$(tr -d '[:space:]' < VERSION)"
 for file in mspa/resources/mspa_win64.exe \
-            mspa/resources/gdal/gdal_translate.exe \
             MSPA_Guide.pdf; do
   if [[ ! -f "$file" ]]; then
     echo "error: $file is missing; run scripts/fetch-resources.sh" >&2
@@ -32,7 +31,6 @@ cp ../LICENSE "$root/"
 
 chmod -R a+rX "$root"
 chmod 755 "$root/mspa/resources/mspa_win64.exe"
-find "$root/mspa/resources/gdal" -name '*.exe' -exec chmod 755 {} +
 
 mkdir -p dist
 zip_name="MSPA-ArcGIS-${version}.zip"

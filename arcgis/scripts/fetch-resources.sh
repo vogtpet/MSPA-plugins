@@ -2,7 +2,6 @@
 # ---------------------------------------------------------------------------
 # Fetch the resources needed to build the ArcGIS plugin:
 #   - the current MSPA Windows x86_64 binary from MSPAstandalone (MSPA_RELEASE)
-#   - the legacy GDAL bundle from the JRC ArcGIS archive
 #   - the current MSPA guide
 #
 # Usage: ./scripts/fetch-resources.sh
@@ -56,19 +55,7 @@ if [[ -z "$exe" ]]; then
 fi
 mkdir -p mspa/resources
 cp "$exe" mspa/resources/mspa_win64.exe
-
-echo "Fetching the legacy GDAL bundle from the JRC ArcGIS archive"
-curl -fsSL -o "$tmp/MSPA-ArcGIS.zip" \
-  "https://ies-ows.jrc.ec.europa.eu/gtb/GTB/MSPA-plugin/MSPA-ArcGIS.zip"
-mkdir -p "$tmp/jrc"
-unzip -q "$tmp/MSPA-ArcGIS.zip" 'MSPA-ArcGIS/mspa/resources/gdal/*' -d "$tmp/jrc"
-if [[ ! -f "$tmp/jrc/MSPA-ArcGIS/mspa/resources/gdal/gdal_translate.exe" ]]; then
-  echo "error: gdal_translate.exe not found in the JRC archive" >&2
-  exit 1
-fi
 rm -rf mspa/resources/gdal
-mkdir -p mspa/resources/gdal
-cp -R "$tmp/jrc/MSPA-ArcGIS/mspa/resources/gdal/." mspa/resources/gdal/
 
 echo "Fetching the current MSPA guide"
 curl -fsSL -o MSPA_Guide.pdf \
@@ -81,7 +68,6 @@ find mspa/resources -type f \( -name '*.exe' -o -name 'mspa_win64.exe' \) \
   echo "MSPA version: ${engine_version}"
   echo "Release: v${release_version}"
   echo "Source: https://github.com/vogtpet/MSPAstandalone/releases/tag/v${release_version}"
-  echo "GDAL bundle: legacy MSPA-ArcGIS.zip from the JRC MSPA page"
   echo ""
   (cd mspa/resources && echo "$(sha256_of mspa_win64.exe)  mspa_win64.exe")
 } > mspa/resources/BINARIES.txt

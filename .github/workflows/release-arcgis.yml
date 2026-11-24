@@ -36,7 +36,7 @@ jobs:
           python3 -m py_compile mspa/MSPA.pyt
           rm -rf mspa/__pycache__
 
-      - name: Fetch the MSPA binary, GDAL bundle and guide
+      - name: Fetch the MSPA binary and guide
         run: ./scripts/fetch-resources.sh
 
       - name: Build the release archive

@@ -6,7 +6,7 @@ wrapping the MSPA 2.4 command line tool from
 
 | | |
 |---|---|
-| **Plugin version** | 2.2.6 |
+| **Plugin version** | 2.3.0 |
 | **MSPA version** | 2.4 (release 2.4.1) |
 | **Host** | ArcGIS Pro or ArcGIS Desktop 10.3–10.9 (64-bit Windows) |
 
@@ -17,8 +17,8 @@ Windows ARM they run under emulation and use the x86_64 MSPA executable.
 
 ## Installation
 
-1. Download `MSPA-ArcGIS-2.2.6.zip` from the
-   [ArcGIS release](https://github.com/vogtpet/MSPA-plugins/releases/tag/arcgis-v2.2.6)
+1. Download `MSPA-ArcGIS-2.3.0.zip` from the
+   [ArcGIS release](https://github.com/vogtpet/MSPA-plugins/releases/tag/arcgis-v2.3.0)
    and verify it against `SHA256SUMS` if you wish.
 2. Extract the archive to a **permanent** folder, for example
    `C:\Users\<user>\Documents\ArcGIS\MSPA-ArcGIS`. The `mspa` folder with
@@ -91,17 +91,19 @@ overwritten after a warning in the tool messages.
 The toolbox checks `arcgis/VERSION` in the `MSPA-plugins` repository each time
 it runs and adds a warning when a newer plugin version is available, with a
 link to the release. Installation of a new version is manual: download the
-archive, extract it and run the installer again.
+archive and extract it over the existing folder.
 
 ## Known limitations
 
 * **ArcGIS Pro** uses its built-in GDAL 3.x through the `osgeo` Python
   bindings for the TIFF conversion; no external GDAL or Visual C++ runtime is
   needed.
-* **ArcGIS Desktop 10.x** has no `osgeo`; it falls back to the bundled legacy
-  GDAL 1.11 (2017) `gdal_translate.exe`, which requires the Microsoft Visual
-  C++ 2013 x64 Redistributable (`vcredist_x64.exe`). ArcGIS Desktop is legacy;
-  ArcGIS Pro is recommended.
+* **ArcGIS Desktop 10.x** has no `osgeo` and uses only ESRI functions: the
+  input is read directly by MSPA (or converted with **Copy Raster** if
+  needed), the extent is restored with a world file, the coordinate system
+  with **Define Projection**, and the GTB metadata is written into the TIFF.
+  No GDAL download, Visual C++ runtime or administrator rights are required.
+  ArcGIS Desktop is legacy; ArcGIS Pro is recommended.
 * Batch processing of several files is not available; use GTB or GWB for that.
 * Windows x86_64 only; macOS and Linux are served by the R plugin and the
   standalone tool.
@@ -110,14 +112,13 @@ archive, extract it and run the installer again.
 
 ```sh
 cd arcgis
-./scripts/fetch-resources.sh   # MSPA 2.4.1 Windows binary, GDAL bundle, guide
+./scripts/fetch-resources.sh   # MSPA 2.4.1 Windows binary and guide
 ./scripts/build-release.sh     # dist/MSPA-ArcGIS-<version>.zip + SHA256SUMS
 ```
 
-The MSPA executable and the GDAL bundle are not stored in Git; the build
-workflow fetches the current MSPA binary from the MSPAstandalone release named
-in `MSPA_RELEASE` (engine version in `MSPA_VERSION`) and the legacy GDAL bundle
-from the JRC ArcGIS archive.
+The MSPA executable is not stored in Git; the build workflow fetches the
+current MSPA binary from the MSPAstandalone release named in `MSPA_RELEASE`
+(engine version in `MSPA_VERSION`).
 
 ## License
 

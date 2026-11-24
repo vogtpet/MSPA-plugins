@@ -5,6 +5,28 @@ and are independent of the MSPA version. The MSPA version wrapped by a release
 is stored in `MSPA_VERSION`; the binary release it is taken from is in
 `MSPA_RELEASE`.
 
+## [2.3.0] - 2026-11-24
+
+### Changed
+
+* ArcGIS Desktop 10.x no longer needs the bundled legacy GDAL 1.11
+  `gdal_translate.exe`, the Microsoft Visual C++ 2013 x64 Redistributable or
+  administrator rights. The output extent is restored with a world file and
+  baked into a GeoTIFF with **Copy Raster**; the coordinate system is written
+  with **Define Projection**; the GTB metadata tags are appended to the TIFF
+  in Python. MSPA reads the input directly and ArcGIS **Copy Raster** is only
+  used when the input cannot be read.
+
+### Fixed
+
+* The world file used the transposed raster dimensions.
+
+### Removed
+
+* The legacy GDAL bundle is no longer downloaded or shipped.
+* ArcGIS Pro still uses its built-in GDAL through the `osgeo` bindings, which
+  also keeps the LZW compression and TIFF metadata.
+
 ## [2.2.6] - 2026-11-23
 
 ### Fixed
