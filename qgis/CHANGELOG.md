@@ -5,6 +5,31 @@ and are independent of the MSPA version. The MSPA version wrapped by a release
 is stored in `MSPA_VERSION`; the binary release it is taken from is in
 `MSPA_RELEASE`.
 
+## [2.2.0] - 2026-11-25
+
+One plugin for QGIS 3 and QGIS 4.
+
+### Added
+
+* QGIS 4 (Qt6) support in the same package as QGIS 3 (Qt5), using the
+  `qgis.PyQt` compatibility layer.
+* `qgisMaximumVersion=4.99`, so the plugin is listed for QGIS 3.16+ and
+  QGIS 4.x.
+
+### Changed
+
+* The plugin is now maintained in `qgis/` and released as
+  `MSPA-QGIS-<version>.zip` with the tag prefix `qgis-v` (previously
+  `qgis3/`, `MSPA-QGIS3-<version>.zip`, `qgis3-v`).
+* Qt5/Qt6 compatibility shims for the `QAction` location, scoped
+  `QMessageBox` enums, `WindowModality` and `exec()`.
+* Compiled Qt resources were removed; the window and button icons are loaded
+  from `icon.png` and `help.png`, so the package is independent of PyQt5.
+
+### Fixed
+
+* The dialog no longer depends on `QDesktopWidget`, which was removed in Qt6.
+
 ## [2.1.1] - 2026-11-25
 
 ### Fixed

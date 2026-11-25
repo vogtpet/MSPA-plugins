@@ -50,7 +50,7 @@ chmod -R a+rX "$root"
 find "$root/mspa/binaries" -type f -exec chmod 755 {} +
 
 mkdir -p dist
-zip_name="MSPA-QGIS3-${version}.zip"
+zip_name="MSPA-QGIS-${version}.zip"
 out="$(pwd)/dist"
 rm -f "${out}/${zip_name}" "${out}/SHA256SUMS"
 ( cd "$stage" && zip -qr "${out}/${zip_name}" mspa )

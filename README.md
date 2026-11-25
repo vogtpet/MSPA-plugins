@@ -14,8 +14,7 @@ it does not contain a separate MSPA implementation.
 | Plugin | Folder | Version | MSPA | Download |
 |--------|--------|---------|------|----------|
 | R / RStudio | [`r/`](r/) | 2.2.14 | 2.4 | [RMSPA-2.2.14.zip](https://github.com/vogtpet/MSPA-plugins/releases/download/r-v2.2.14/RMSPA-2.2.14.zip) |
-| QGIS 3 | [`qgis3/`](qgis3/) | 2.1.1 | 2.4 | [MSPA-QGIS3-2.1.1.zip](https://github.com/vogtpet/MSPA-plugins/releases/download/qgis3-v2.1.1/MSPA-QGIS3-2.1.1.zip) |
-| QGIS 4 | [`qgis4/`](qgis4/) | – | 2.4 | planned |
+| QGIS 3 & 4 | [`qgis/`](qgis/) | 2.2.0 | 2.4 | [MSPA-QGIS-2.2.0.zip](https://github.com/vogtpet/MSPA-plugins/releases/download/qgis-v2.2.0/MSPA-QGIS-2.2.0.zip) |
 | ArcGIS | [`arcgis/`](arcgis/) | 2.3.1 | 2.4 | [MSPA-ArcGIS-2.3.1.zip](https://github.com/vogtpet/MSPA-plugins/releases/download/arcgis-v2.3.1/MSPA-ArcGIS-2.3.1.zip) |
 
 The installable archives are attached to the [releases](https://github.com/vogtpet/MSPA-plugins/releases).
@@ -37,7 +36,7 @@ Every plugin publishes its current version in a plain text file, for example
 `r/VERSION`. The installed plugin reads that file from GitHub and offers the
 new release when the published version is higher than the installed one.
 Releases are published as tags with a plugin prefix, for example `r-v2.2.14`,
-`qgis3-v2.1.1` and `arcgis-v2.3.1`,
+`qgis-v2.2.0` and `arcgis-v2.3.1`,
 and the archives are attached to the corresponding GitHub release.
 
 ## Repository layout
@@ -45,8 +44,7 @@ and the archives are attached to the corresponding GitHub release.
 ```
 MSPA-plugins/
 ├── r/          R/RStudio plugin (Shiny application)
-├── qgis3/      QGIS 3 plugin
-├── qgis4/      QGIS 4 plugin
+├── qgis/       QGIS 3/4 plugin
 ├── arcgis/     ArcGIS toolbox
 └── .github/    build and release workflows
 ```

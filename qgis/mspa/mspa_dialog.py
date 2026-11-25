@@ -23,6 +23,7 @@
 import os
 
 from qgis.PyQt import uic
+from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QApplication, QDialog
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -34,6 +35,12 @@ class MspaDialog(QDialog, FORM_CLASS):
         """Constructor."""
         super(MspaDialog, self).__init__(parent)
         self.setupUi(self)
+        self.setWindowIcon(QIcon(os.path.join(
+            os.path.dirname(__file__), 'icon.png')))
+        help_icon = QIcon(os.path.join(
+            os.path.dirname(__file__), 'help.png'))
+        self.pluginguideButton.setIcon(help_icon)
+        self.mspaguideButton.setIcon(help_icon)
         self.centerOnScreen()
 
     def centerOnScreen(self):

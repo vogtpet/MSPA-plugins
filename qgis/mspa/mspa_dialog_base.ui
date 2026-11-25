@@ -16,10 +16,6 @@
   <property name="windowTitle">
    <string>MSPA Plugin</string>
   </property>
-  <property name="windowIcon">
-   <iconset>
-    <normaloff>:/plugins/mspa/icon.png</normaloff>:/plugins/mspa/icon.png</iconset>
-  </property>
   <property name="locale">
    <locale language="English" country="UnitedStates"/>
   </property>
@@ -483,10 +479,6 @@
    <property name="text">
     <string>Plugin guide</string>
    </property>
-   <property name="icon">
-    <iconset>
-     <normaloff>:/plugins/mspa/help.png</normaloff>:/plugins/mspa/help.png</iconset>
-   </property>
    <property name="iconSize">
     <size>
      <width>18</width>
@@ -510,10 +502,6 @@
    </property>
    <property name="text">
     <string>MSPA guide</string>
-   </property>
-   <property name="icon">
-    <iconset>
-     <normaloff>:/plugins/mspa/help.png</normaloff>:/plugins/mspa/help.png</iconset>
    </property>
    <property name="iconSize">
     <size>

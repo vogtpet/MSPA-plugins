@@ -1,9 +1,9 @@
-name: Release MSPA QGIS 3
+name: Release MSPA QGIS
 
 on:
   push:
     tags:
-      - "qgis3-v*"
+      - "qgis-v*"
 
 permissions:
   contents: write
@@ -16,7 +16,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: qgis3
+        working-directory: qgis
 
     steps:
       - uses: actions/checkout@v4
@@ -24,10 +24,10 @@ jobs:
       - name: Verify tag against VERSION
         run: |
           version="$(tr -d '[:space:]' < VERSION)"
-          tag="${GITHUB_REF_NAME#qgis3-v}"
+          tag="${GITHUB_REF_NAME#qgis-v}"
           echo "tag=${tag} VERSION=${version}"
           if [[ -z "${version}" || "${tag}" != "${version}" ]]; then
-            echo "error: tag qgis3-v${tag} does not match qgis3/VERSION (${version})" >&2
+            echo "error: tag qgis-v${tag} does not match qgis/VERSION (${version})" >&2
             exit 1
           fi
           grep -q "^version=${version}$" mspa/metadata.txt
@@ -60,9 +60,9 @@ jobs:
             echo
             echo "Install with QGIS: **Plugins → Manage and Install Plugins → Install from ZIP**."
             echo
-            echo "See [README.md](https://github.com/${GITHUB_REPOSITORY}/blob/main/qgis3/README.md) for installation and usage."
-          } > ../release-notes-qgis3.md
-          cat ../release-notes-qgis3.md
+            echo "See [README.md](https://github.com/${GITHUB_REPOSITORY}/blob/main/qgis/README.md) for installation and usage."
+          } > ../release-notes-qgis.md
+          cat ../release-notes-qgis.md
 
       - name: Publish GitHub release
         env:
@@ -70,8 +70,8 @@ jobs:
         run: |
           version="$(tr -d '[:space:]' < VERSION)"
           engine="$(tr -d '[:space:]' < MSPA_VERSION)"
-          gh release create "qgis3-v${version}" \
-            "dist/MSPA-QGIS3-${version}.zip" \
+          gh release create "qgis-v${version}" \
+            "dist/MSPA-QGIS-${version}.zip" \
             "dist/SHA256SUMS" \
-            --title "MSPA QGIS 3 ${version} (MSPA ${engine})" \
-            --notes-file ../release-notes-qgis3.md
+            --title "MSPA QGIS ${version} (MSPA ${engine})" \
+            --notes-file ../release-notes-qgis.md

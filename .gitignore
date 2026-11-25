@@ -5,9 +5,9 @@ arcgis/dist/
 arcgis/mspa/resources/mspa_win64.exe
 arcgis/mspa/resources/BINARIES.txt
 arcgis/MSPA_Guide.pdf
-qgis3/dist/
-qgis3/mspa/binaries/
-qgis3/mspa/MSPA_Guide.pdf
+qgis/dist/
+qgis/mspa/binaries/
+qgis/mspa/MSPA_Guide.pdf
 *.zip
 
 # Python byte code

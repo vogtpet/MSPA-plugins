@@ -31,25 +31,49 @@ from time import strftime
 from qgis.PyQt.QtCore import QCoreApplication, Qt, QUrl
 from qgis.PyQt.QtGui import QDesktopServices, QIcon
 from qgis.PyQt.QtWidgets import (
-    QAction, QApplication, QFileDialog, QMessageBox, QProgressDialog)
+    QApplication, QFileDialog, QMessageBox, QProgressDialog)
+
+try:  # Qt 6 moved QAction from QtWidgets to QtGui
+    from qgis.PyQt.QtGui import QAction
+except ImportError:  # Qt 5
+    from qgis.PyQt.QtWidgets import QAction
 
 from qgis.core import QgsProject, QgsRasterLayer
 
-from . import resources  # noqa: F401  (registers the Qt resources)
 from .mspa_dialog import MspaDialog
+
+
+def _qt_enum(owner, group, name):
+    """Return a scoped Qt enum on Qt 6 or its unscoped Qt 5 equivalent."""
+    nested = getattr(owner, group, None)
+    if nested is not None and hasattr(nested, name):
+        return getattr(nested, name)
+    return getattr(owner, name)
+
+
+MSG_INFORMATION = _qt_enum(QMessageBox, "Icon", "Information")
+MSG_YES = _qt_enum(QMessageBox, "StandardButton", "Yes")
+MSG_NO = _qt_enum(QMessageBox, "StandardButton", "No")
+ROLE_ACCEPT = _qt_enum(QMessageBox, "ButtonRole", "AcceptRole")
+ROLE_REJECT = _qt_enum(QMessageBox, "ButtonRole", "RejectRole")
+
+try:
+    WINDOW_MODAL = Qt.WindowModality.WindowModal
+except AttributeError:  # Qt < 5.15
+    WINDOW_MODAL = Qt.WindowModal
 
 try:
     from osgeo import gdal
 except ImportError:
     gdal = None
 
-PLUGIN_VERSION = "2.1.1"
+PLUGIN_VERSION = "2.2.0"
 UPDATE_URL = ("https://raw.githubusercontent.com/vogtpet/MSPA-plugins/"
-              "main/qgis3/VERSION")
-RELEASE_URL = "https://github.com/vogtpet/MSPA-plugins/releases/tag/qgis3-v"
+              "main/qgis/VERSION")
+RELEASE_URL = "https://github.com/vogtpet/MSPA-plugins/releases/tag/qgis-v"
 GUIDE_URL = "https://ies-ows.jrc.ec.europa.eu/gtb/GTB/MSPA_Guide.pdf"
 PLUGIN_DOC_URL = ("https://github.com/vogtpet/MSPA-plugins/"
-                  "blob/main/qgis3/README.md")
+                  "blob/main/qgis/README.md")
 
 # Same limits as RMSPA and the ArcGIS plugin: total pixels, not per axis.
 MAX_PIXELS = 400000000      # about 20,000 x 20,000
@@ -364,7 +388,7 @@ class Mspa:
                                    self.dlg)
         progress.setWindowTitle("MSPA")
         progress.setRange(0, 0)
-        progress.setWindowModality(Qt.WindowModal)
+        progress.setWindowModality(WINDOW_MODAL)
         progress.setMinimumDuration(0)
         progress.show()
         QApplication.processEvents()
@@ -372,7 +396,7 @@ class Mspa:
         workdir = None
         try:
             executable = mspa_binary(self.plugin_dir)
-            workdir = tempfile.mkdtemp(prefix="mspa_qgis3_")
+            workdir = tempfile.mkdtemp(prefix="mspa_qgis_")
             source = os.path.join(workdir, "in.tif")
             result = os.path.join(workdir, "out.tif")
             self.normalise_input(self._input["path"], source)
@@ -429,7 +453,7 @@ class Mspa:
         """Ask where to store the GeoTIFF and add it to the map."""
         box = QMessageBox(self.dlg)
         box.setWindowTitle("MSPA finished")
-        box.setIcon(QMessageBox.Information)
+        box.setIcon(MSG_INFORMATION)
         box.setText("The image was processed successfully.")
         box.setInformativeText(
             "Save the result as a GeoTIFF and add it to the map?")
@@ -440,9 +464,9 @@ class Mspa:
                 self.dlg.comboBox_2.currentText(),
                 self.dlg.comboBox_3.currentText(),
                 self.dlg.comboBox_4.currentText()))
-        save = box.addButton("Save GeoTIFF", QMessageBox.AcceptRole)
-        box.addButton("Close", QMessageBox.RejectRole)
-        box.exec_()
+        save = box.addButton("Save GeoTIFF", ROLE_ACCEPT)
+        box.addButton("Close", ROLE_REJECT)
+        box.exec()
         if box.clickedButton() is not save:
             return
 
@@ -460,8 +484,8 @@ class Mspa:
             answer = QMessageBox.question(
                 self.dlg, "MSPA",
                 "The file already exists and will be overwritten:\n" + target,
-                QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-            if answer != QMessageBox.Yes:
+                MSG_YES | MSG_NO, MSG_NO)
+            if answer != MSG_YES:
                 return
 
         dataset = gdal.Open(result, gdal.GA_ReadOnly)
