@@ -6,7 +6,7 @@ wrapping the MSPA 2.4 command line tool from
 
 | | |
 |---|---|
-| **Plugin version** | 2.1.0 |
+| **Plugin version** | 2.1.1 |
 | **MSPA version** | 2.4 (release 2.4.1) |
 | **Host** | QGIS 3.16 or newer |
 
@@ -26,8 +26,8 @@ administrator rights.
 
 ## Installation
 
-1. Download `MSPA-QGIS3-2.1.0.zip` from the
-   [QGIS 3 release](https://github.com/vogtpet/MSPA-plugins/releases/tag/qgis3-v2.1.0)
+1. Download `MSPA-QGIS3-2.1.1.zip` from the
+   [QGIS 3 release](https://github.com/vogtpet/MSPA-plugins/releases/tag/qgis3-v2.1.1)
    and verify it against `SHA256SUMS` if you wish.
 2. In QGIS open **Plugins → Manage and Install Plugins…**.
 3. Select **Install from ZIP**, choose the downloaded ZIP file and click

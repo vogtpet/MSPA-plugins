@@ -43,7 +43,7 @@ try:
 except ImportError:
     gdal = None
 
-PLUGIN_VERSION = "2.1.0"
+PLUGIN_VERSION = "2.1.1"
 UPDATE_URL = ("https://raw.githubusercontent.com/vogtpet/MSPA-plugins/"
               "main/qgis3/VERSION")
 RELEASE_URL = "https://github.com/vogtpet/MSPA-plugins/releases/tag/qgis3-v"
@@ -61,7 +61,7 @@ BINARIES = {
     ("Windows", "arm64"): "mspa_win64_ARM.exe",
     ("Darwin", "arm64"): "mspa_macOS_ARM",
     ("Linux", "x86_64"): "mspa_linux",
-    ("Linux", "aarch64"): "mspa_linux_ARM",
+    ("Linux", "arm64"): "mspa_linux_ARM",
 }
 
 

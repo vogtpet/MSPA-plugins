@@ -5,6 +5,14 @@ and are independent of the MSPA version. The MSPA version wrapped by a release
 is stored in `MSPA_VERSION`; the binary release it is taken from is in
 `MSPA_RELEASE`.
 
+## [2.1.1] - 2026-11-25
+
+### Fixed
+
+* Linux aarch64 (for example Ubuntu 26.10 or Debian 13 on ARM) was rejected
+  with "MSPA does not support this platform: Linux aarch64". The architecture
+  name is normalised to `arm64`, but the binary table still used `aarch64`.
+
 ## [2.1.0] - 2026-11-25
 
 First release from the MSPA-plugins repository, based on the JRC QGIS plugin

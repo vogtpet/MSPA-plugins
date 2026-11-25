@@ -2,7 +2,7 @@
 name=MSPA
 qgisMinimumVersion=3.16
 description=Morphological Spatial Pattern Analysis
-version=2.1.0
+version=2.1.1
 author=Peter Vogt; Diego Migliavacca
 email=peter.vogt@ec.europa.eu
 about=Analysis and description of image objects including morphometric features and connecting pathways. Wraps the MSPA 2.4 command line tool from MSPAstandalone. See https://github.com/vogtpet/MSPA-plugins/tree/main/qgis3 for installation and usage.
@@ -16,4 +16,4 @@ icon=icon.png
 experimental=False
 deprecated=False
 
-changelog=2.1.0: first release from the MSPA-plugins repository. MSPA 2.4.1 for Windows x86_64/ARM64, Linux x86_64 (glibc 2.31+)/aarch64 and macOS Apple Silicon; 400 million pixel limit; automatic -disk above 65 million pixels; results written to a temporary folder; update check against GitHub.
+changelog=2.1.1: Linux aarch64 is now detected correctly. 2.1.0: first release from the MSPA-plugins repository. MSPA 2.4.1 for Windows x86_64/ARM64, Linux x86_64 (glibc 2.31+)/aarch64 and macOS Apple Silicon; 400 million pixel limit; automatic -disk above 65 million pixels; results written to a temporary folder; update check against GitHub.
