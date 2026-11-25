@@ -1,0 +1,77 @@
+name: Release MSPA QGIS 3
+
+on:
+  push:
+    tags:
+      - "qgis3-v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: build and publish
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: qgis3
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify tag against VERSION
+        run: |
+          version="$(tr -d '[:space:]' < VERSION)"
+          tag="${GITHUB_REF_NAME#qgis3-v}"
+          echo "tag=${tag} VERSION=${version}"
+          if [[ -z "${version}" || "${tag}" != "${version}" ]]; then
+            echo "error: tag qgis3-v${tag} does not match qgis3/VERSION (${version})" >&2
+            exit 1
+          fi
+          grep -q "^version=${version}$" mspa/metadata.txt
+
+      - name: Check Python syntax
+        run: |
+          python3 -m py_compile mspa/*.py
+          python3 -c "import xml.etree.ElementTree as ET; ET.parse('mspa/mspa_dialog_base.ui')"
+          rm -rf mspa/__pycache__
+
+      - name: Fetch the MSPA binaries and guide
+        run: ./scripts/fetch-resources.sh
+
+      - name: Build the release archive
+        run: ./scripts/build-release.sh
+
+      - name: Prepare release notes
+        run: |
+          version="$(tr -d '[:space:]' < VERSION)"
+          engine="$(tr -d '[:space:]' < MSPA_VERSION)"
+          release="$(tr -d '[:space:]' < MSPA_RELEASE)"
+          {
+            echo "MSPA engine: **${engine}** (binary release ${release})"
+            echo
+            awk -v ver="${version}" '
+              index($0, "## [" ver "]") == 1 {on=1; next}
+              on && substr($0, 1, 4) == "## [" {exit}
+              on {print}
+            ' CHANGELOG.md
+            echo
+            echo "Install with QGIS: **Plugins → Manage and Install Plugins → Install from ZIP**."
+            echo
+            echo "See [README.md](https://github.com/${GITHUB_REPOSITORY}/blob/main/qgis3/README.md) for installation and usage."
+          } > ../release-notes-qgis3.md
+          cat ../release-notes-qgis3.md
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="$(tr -d '[:space:]' < VERSION)"
+          engine="$(tr -d '[:space:]' < MSPA_VERSION)"
+          gh release create "qgis3-v${version}" \
+            "dist/MSPA-QGIS3-${version}.zip" \
+            "dist/SHA256SUMS" \
+            --title "MSPA QGIS 3 ${version} (MSPA ${engine})" \
+            --notes-file ../release-notes-qgis3.md
