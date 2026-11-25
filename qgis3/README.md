@@ -123,6 +123,24 @@ with **Install from ZIP**; the settings and the profile stay unchanged.
 * Batch processing of several files is not available; use GTB or GWB for that.
 * Only single-band 8-bit GeoTIFF inputs with the GTB encoding are accepted.
 
+## Troubleshooting
+
+* **The plugin does not appear in the menu.** Check that **MSPA** is enabled
+  in **Plugins → Manage and Install Plugins → Installed** and that QGIS is
+  version 3.16 or newer.
+* **"The MSPA executable is missing"** – the ZIP was not installed completely.
+  Reinstall it with **Install from ZIP** instead of copying individual files.
+* **macOS cannot start the bundled executable** after extracting the ZIP with
+  Finder: Gatekeeper has quarantined the file. Install the ZIP through QGIS
+  (which does not copy the quarantine flag), or remove the flag from the
+  plugin folder with
+  `xattr -dr com.apple.quarantine <profile>/python/plugins/mspa`.
+* **Linux reports a GLIBC version error** – the distribution is older than
+  glibc 2.31. Use a newer distribution, the standalone tool or the R plugin.
+* **MSPA reports an error for a valid-looking image** – export the input as an
+  uncompressed GeoTIFF with the 0/1/2 encoding and try again; the message box
+  shows MSPA's own output.
+
 ## Development
 
 ```sh
