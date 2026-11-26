@@ -5,6 +5,15 @@ and are independent of the MSPA version. The MSPA version wrapped by a release
 is stored in `MSPA_VERSION`; the binary release it is taken from is in
 `MSPA_RELEASE`.
 
+## [2.3.2] - 2026-11-26
+
+### Added
+
+* The input parameter accepts a raster layer (`GPRasterLayer`), so an image
+  can be dragged from the ArcGIS Contents pane into the tool.
+* New optional parameter **Add result to map** (default on). When it is off,
+  no layer is added and a current ArcGIS Pro map is not required.
+
 ## [2.3.1] - 2026-11-24
 
 ### Changed

@@ -48,7 +48,7 @@ except Exception as exc:
     GDAL_IMPORT_ERROR = str(exc)
 
 
-PLUGIN_VERSION = "2.3.1"
+PLUGIN_VERSION = "2.3.2"
 UPDATE_URL = ("https://raw.githubusercontent.com/vogtpet/MSPA-plugins/"
               "main/arcgis/VERSION")
 RELEASE_URL = "https://github.com/vogtpet/MSPA-plugins/releases/tag/arcgis-v"
@@ -107,14 +107,14 @@ class MSPA(object):
         """Define parameter definitions"""
 
         inputImage = arcpy.Parameter(
-            displayName=("Input image - 0 = missing/nodata (optional), "
-                         "1 = background, 2 = foreground"),
+            displayName=("Input raster layer (drag from Contents or browse) - "
+                         "0 = missing/nodata (optional), 1 = background, "
+                         "2 = foreground"),
             name="InputImage",
-            datatype="DEFile",
+            datatype="GPRasterLayer",
             parameterType="Required",
             direction="Input"
         )
-        inputImage.filter.list = ['tif', 'tiff']
 
         fgConn = arcpy.Parameter(
             displayName="FGconn",
@@ -173,8 +173,17 @@ class MSPA(object):
         )
         lowMemory.value = False
 
+        addToMap = arcpy.Parameter(
+            displayName="Add result to map",
+            name="AddToMap",
+            datatype="GPBoolean",
+            parameterType="Optional",
+            direction="Input"
+        )
+        addToMap.value = True
+
         parameters = [inputImage, fgConn, edgeWidth, Transition, inText,
-                      savePath, lowMemory]
+                      savePath, lowMemory, addToMap]
         return parameters
 
     def isLicensed(self):
@@ -335,7 +344,11 @@ class MSPA(object):
         messages.AddMessage("MSPA ArcGIS plugin %s (MSPA 2.4)" % PLUGIN_VERSION)
         check_for_update(messages)
 
-        if self.install_info['ProductName'] == 'ArcGISPro':
+        add_value = parameters[7].value
+        add_to_map = (add_value is True or
+                      str(add_value).strip().lower() in ("true", "1"))
+
+        if add_to_map and self.install_info['ProductName'] == 'ArcGISPro':
             try:
                 project = arcpy.mp.ArcGISProject("current")
                 if not project.listMaps():
@@ -347,7 +360,14 @@ class MSPA(object):
                     "A current ArcGIS Pro project is required: " + str(exc))
                 sys.exit(0)
 
+        input_value = parameters[0].value
         filepath = parameters[0].valueAsText
+        if input_value:
+            try:
+                input_desc = arcpy.Describe(input_value)
+                filepath = input_desc.catalogPath or filepath
+            except Exception:
+                pass
         if not filepath:
             messages.AddErrorMessage("Please select an input image.")
             sys.exit(0)
@@ -617,21 +637,22 @@ class MSPA(object):
                         "The GTB metadata could not be written into the "
                         "result: " + str(exc))
 
-            try:
-                layer = arcpy.MakeRasterLayer_management(
-                    movedfile, inputparams).getOutput(0)
-                if self.install_info['ProductName'] == 'Desktop':
-                    document = arcpy.mapping.MapDocument("CURRENT")
-                    dataframe = arcpy.mapping.ListDataFrames(document)[0]
-                    arcpy.mapping.AddLayer(dataframe, layer, "TOP")
-                else:
-                    project = arcpy.mp.ArcGISProject("current")
-                    project.listMaps()[0].addLayer(layer, "TOP")
-                messages.AddMessage(
-                    "GeoTiff image processed successfully: " + movedfile)
-            except Exception as exc:
-                messages.AddWarningMessage(
-                    "The result was written but could not be added to the map: "
-                    + str(exc))
+            if add_to_map:
+                try:
+                    layer = arcpy.MakeRasterLayer_management(
+                        movedfile, inputparams).getOutput(0)
+                    if self.install_info['ProductName'] == 'Desktop':
+                        document = arcpy.mapping.MapDocument("CURRENT")
+                        dataframe = arcpy.mapping.ListDataFrames(document)[0]
+                        arcpy.mapping.AddLayer(dataframe, layer, "TOP")
+                    else:
+                        project = arcpy.mp.ArcGISProject("current")
+                        project.listMaps()[0].addLayer(layer, "TOP")
+                except Exception as exc:
+                    messages.AddWarningMessage(
+                        "The result was written but could not be added to the "
+                        "map: " + str(exc))
+            messages.AddMessage(
+                "GeoTiff image processed successfully: " + movedfile)
         finally:
             shutil.rmtree(workdir, ignore_errors=True)
