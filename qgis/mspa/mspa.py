@@ -68,7 +68,7 @@ try:
 except ImportError:
     gdal = None
 
-PLUGIN_VERSION = "2.2.3"
+PLUGIN_VERSION = "2.2.4"
 
 # QFileDialog asks the platform icon theme for file icons, which can
 # abort QGIS on some Linux/GTK installations. Use a plain Qt picker there.
@@ -245,7 +245,7 @@ class Mspa:
             return ""
         filename, _ = QFileDialog.getOpenFileName(
             self.dlg, "Select the MSPA input image", start,
-            "GeoTIFF images (*.tif *.tiff)")
+            "TIFF images (*.tif *.tiff)")
         return filename or ""
 
     def choose_output_directory(self, start):
@@ -306,13 +306,12 @@ class Mspa:
         projection = dataset.GetProjection()
         gcps = dataset.GetGCPs()
         gcp_projection = dataset.GetGCPProjection()
-        if not projection and not gcps:
-            raise ValueError(
-                "The image has no projection. Please load an "
-                "MSPA-compliant image.")
+        if not projection:
+            projection = gcp_projection
 
-        projection = projection or gcp_projection
         geotransform = dataset.GetGeoTransform()
+        has_transform = (geotransform is not None
+                         and tuple(geotransform) != (0.0, 1.0, 0.0, 0.0, 0.0, 1.0))
         width = dataset.RasterXSize
         height = dataset.RasterYSize
         bands = dataset.RasterCount
@@ -364,7 +363,7 @@ class Mspa:
             "height": height,
             "pixels": pixels,
             "projection": projection,
-            "geotransform": geotransform,
+            "geotransform": geotransform if has_transform else None,
             "gcps": gcps,
             "gcp_projection": gcp_projection,
         }
@@ -390,11 +389,12 @@ class Mspa:
         dataset = gdal.Open(path, gdal.GA_Update)
         if dataset is None:
             raise RuntimeError("The MSPA result could not be reopened.")
-        dataset.SetProjection(self._input["projection"])
+        if self._input["projection"]:
+            dataset.SetProjection(self._input["projection"])
         if self._input["gcps"]:
             dataset.SetGCPs(self._input["gcps"],
                             self._input["gcp_projection"])
-        else:
+        elif self._input["geotransform"] is not None:
             dataset.SetGeoTransform(self._input["geotransform"])
         input_name = os.path.splitext(
             os.path.basename(self._input["path"]))[0]

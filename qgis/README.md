@@ -7,7 +7,7 @@ works in QGIS 3 (Qt5) and QGIS 4 (Qt6).
 
 | | |
 |---|---|
-| **Plugin version** | 2.2.3 |
+| **Plugin version** | 2.2.4 |
 | **MSPA version** | 2.4 (release 2.4.1) |
 | **Host** | QGIS 3.16 or newer, and QGIS 4 |
 
@@ -27,8 +27,8 @@ administrator rights.
 
 ## Installation
 
-1. Download `MSPA-QGIS-2.2.3.zip` from the
-   [QGIS release](https://github.com/vogtpet/MSPA-plugins/releases/tag/qgis-v2.2.3)
+1. Download `MSPA-QGIS-2.2.4.zip` from the
+   [QGIS release](https://github.com/vogtpet/MSPA-plugins/releases/tag/qgis-v2.2.4)
    and verify it against `SHA256SUMS` if you wish.
 2. In QGIS open **Plugins → Manage and Install Plugins…**.
 3. Select **Install from ZIP**, choose the downloaded ZIP file and click
@@ -73,8 +73,7 @@ button opens this document on GitHub.
 
 ## Input
 
-A single-band 8-bit GeoTIFF with a coordinate reference system, using the GTB
-encoding:
+A single-band 8-bit TIFF or GeoTIFF using the GTB encoding:
 
 | Value | Meaning |
 |---|---|
@@ -85,6 +84,10 @@ encoding:
 Standard `0/1` masks have to be recoded to `1/2` (background/foreground)
 before use; the R plugin (`RMSPA`) offers an automatic conversion, the QGIS
 plugin does not.
+
+A GeoTIFF normally carries a coordinate reference system. Plain TIFF files
+without georeferencing are also accepted; they are processed in pixel space
+and the result is written without a coordinate reference system.
 
 ### Maximum input size
 
@@ -105,8 +108,9 @@ The result is written to the folder you select as
 <input name>_<FGconn>_<EdgeWidth>_<Transition>_<Intext>.tif
 ```
 
-for example `input_8_1_1_1.tif`. The spatial reference and extent of the input
-are restored, and the LZW-compressed GeoTIFF keeps the MSPA colour table and
+for example `input_8_1_1_1.tif`. When the input is georeferenced, its spatial
+reference and extent are restored; a plain TIFF stays unreferenced. The
+LZW-compressed TIFF keeps the MSPA colour table and
 the GTB metadata (`TIFFTAG_IMAGEDESCRIPTION=GTB_MSPA, ...`) used by
 GuidosToolbox to reload the parameters. The layer is added to the current
 project. An existing result with the same name is overwritten only after a
@@ -126,7 +130,7 @@ with **Install from ZIP**; the settings and the profile stay unchanged.
 * Linux x86_64 requires glibc 2.31 or newer; older distributions (for example
   CentOS 7) cannot run the bundled executable.
 * Batch processing of several files is not available; use GTB or GWB for that.
-* Only single-band 8-bit GeoTIFF inputs with the GTB encoding are accepted.
+* Only single-band 8-bit TIFF/GeoTIFF inputs with the GTB encoding are accepted.
 * QGIS 4 support is new. The Qt6 code path is tested with PyQt6 and the
   plugin's unit checks; please report any issue on the
   [tracker](https://github.com/vogtpet/MSPA-plugins/issues).

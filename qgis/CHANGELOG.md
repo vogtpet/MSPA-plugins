@@ -5,6 +5,18 @@ and are independent of the MSPA version. The MSPA version wrapped by a release
 is stored in `MSPA_VERSION`; the binary release it is taken from is in
 `MSPA_RELEASE`.
 
+## [2.2.4] - 2026-11-26
+
+### Added
+
+* Plain TIFF inputs without a coordinate reference system are accepted. MSPA
+  operates in pixel space; the result is written without georeferencing.
+  GeoTIFF inputs still get their coordinate system and extent restored.
+
+### Changed
+
+* The input filter and documentation now say TIFF instead of GeoTIFF.
+
 ## [2.2.3] - 2026-11-26
 
 ### Fixed
