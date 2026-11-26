@@ -5,6 +5,23 @@ and are independent of the MSPA version. The MSPA version wrapped by a release
 is stored in `MSPA_VERSION`; the binary release it is taken from is in
 `MSPA_RELEASE`.
 
+## [2.2.3] - 2026-11-26
+
+### Fixed
+
+* The Fedora 45 / QGIS 4 crash when selecting the input image persisted even
+  with `DontUseNativeDialog`, `DontUseCustomDirectoryIcons` and an empty icon
+  provider, because `QFileDialog` itself still asks the GTK icon theme for
+  icons. On **Linux**, the plugin now uses its own small file/folder picker
+  built from `QLineEdit`, `QListWidget` and `QPushButton`; it never creates a
+  `QFileDialog` and never requests themed icons. Windows and macOS keep their
+  native dialogs.
+
+### Changed
+
+* The Linux picker lists folders and `.tif`/`.tiff` files, with **Up** and
+  **Home** buttons; the path field remains editable.
+
 ## [2.2.2] - 2026-11-26
 
 ### Fixed

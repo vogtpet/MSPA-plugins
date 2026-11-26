@@ -41,6 +41,7 @@ except ImportError:  # Qt 5
 from qgis.core import QgsProject, QgsRasterLayer
 
 from .mspa_dialog import MspaDialog
+from .mspa_picker import MspaPathDialog
 
 
 def _qt_enum(owner, group, name):
@@ -63,48 +64,15 @@ except AttributeError:  # Qt < 5.15
     WINDOW_MODAL = Qt.WindowModal
 
 try:
-    DONT_USE_NATIVE_DIALOG = QFileDialog.Option.DontUseNativeDialog
-    DONT_USE_CUSTOM_DIRECTORY_ICONS = (
-        QFileDialog.Option.DontUseCustomDirectoryIcons)
-    FILE_MODE_EXISTING_FILE = QFileDialog.FileMode.ExistingFile
-    FILE_MODE_DIRECTORY = QFileDialog.FileMode.Directory
-    SHOW_DIRS_ONLY = QFileDialog.Option.ShowDirsOnly
-except AttributeError:  # Qt < 5.15
-    DONT_USE_NATIVE_DIALOG = QFileDialog.DontUseNativeDialog
-    DONT_USE_CUSTOM_DIRECTORY_ICONS = (
-        QFileDialog.DontUseCustomDirectoryIcons)
-    FILE_MODE_EXISTING_FILE = QFileDialog.ExistingFile
-    FILE_MODE_DIRECTORY = QFileDialog.Directory
-    SHOW_DIRS_ONLY = QFileDialog.ShowDirsOnly
-
-try:
-    from qgis.PyQt.QtGui import QAbstractFileIconProvider
-    _IconProviderBase = QAbstractFileIconProvider
-except ImportError:  # Qt 5
-    from qgis.PyQt.QtWidgets import QFileIconProvider
-    _IconProviderBase = QFileIconProvider
-
-
-class _EmptyIconProvider(_IconProviderBase):
-    """Return no icons, so the dialog never queries the GTK icon theme.
-
-    Qt's file dialog otherwise asks the platform icon theme for file and
-    folder icons. On Fedora 45 the GTK icon loader (glycin via bwrap) can
-    abort the whole process with an out-of-memory error.
-    """
-
-    def icon(self, *args):
-        return QIcon()
-
-    def type(self, *args):
-        return "File"
-
-try:
     from osgeo import gdal
 except ImportError:
     gdal = None
 
-PLUGIN_VERSION = "2.2.2"
+PLUGIN_VERSION = "2.2.3"
+
+# QFileDialog asks the platform icon theme for file icons, which can
+# abort QGIS on some Linux/GTK installations. Use a plain Qt picker there.
+USE_CUSTOM_PICKER = platform.system() == "Linux"
 UPDATE_URL = ("https://raw.githubusercontent.com/vogtpet/MSPA-plugins/"
               "main/qgis/VERSION")
 RELEASE_URL = "https://github.com/vogtpet/MSPA-plugins/releases/tag/qgis-v"
@@ -265,34 +233,31 @@ class Mspa:
             QDesktopServices.openUrl(QUrl(GUIDE_URL))
 
     def choose_input_file(self):
-        """Show a file dialog that does not use themed file icons."""
-        dialog = QFileDialog(self.dlg, "Select the MSPA input image")
-        dialog.setOption(DONT_USE_NATIVE_DIALOG, True)
-        dialog.setOption(DONT_USE_CUSTOM_DIRECTORY_ICONS, True)
-        dialog.setFileMode(FILE_MODE_EXISTING_FILE)
-        dialog.setNameFilter("GeoTIFF images (*.tif *.tiff)")
-        provider = _EmptyIconProvider()
-        dialog._mspa_icon_provider = provider  # keep the provider alive
-        dialog.setIconProvider(provider)
-        if not dialog.exec():
+        """Ask for the input image without using themed file icons."""
+        start = ""
+        if self._input:
+            start = os.path.dirname(self._input["path"])
+        if USE_CUSTOM_PICKER:
+            dialog = MspaPathDialog(
+                self.dlg, "Select the MSPA input image", start)
+            if dialog.exec():
+                return dialog.result_path()
             return ""
-        selected = dialog.selectedFiles()
-        return selected[0] if selected else ""
+        filename, _ = QFileDialog.getOpenFileName(
+            self.dlg, "Select the MSPA input image", start,
+            "GeoTIFF images (*.tif *.tiff)")
+        return filename or ""
 
     def choose_output_directory(self, start):
-        """Show a folder dialog that does not use themed icons."""
-        dialog = QFileDialog(self.dlg, "Select the output folder", start)
-        dialog.setFileMode(FILE_MODE_DIRECTORY)
-        dialog.setOption(DONT_USE_NATIVE_DIALOG, True)
-        dialog.setOption(DONT_USE_CUSTOM_DIRECTORY_ICONS, True)
-        dialog.setOption(SHOW_DIRS_ONLY, True)
-        provider = _EmptyIconProvider()
-        dialog._mspa_icon_provider = provider  # keep the provider alive
-        dialog.setIconProvider(provider)
-        if not dialog.exec():
+        """Ask for the output folder."""
+        if USE_CUSTOM_PICKER:
+            dialog = MspaPathDialog(
+                self.dlg, "Select the output folder", start, directory=True)
+            if dialog.exec():
+                return dialog.result_path()
             return ""
-        selected = dialog.selectedFiles()
-        return selected[0] if selected else ""
+        return QFileDialog.getExistingDirectory(
+            self.dlg, "Select the output folder", start) or ""
 
     def validate_path(self):
         """Allow the path field to be used without opening a file dialog."""
