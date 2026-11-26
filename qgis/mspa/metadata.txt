@@ -3,7 +3,7 @@ name=MSPA
 qgisMinimumVersion=3.16
 qgisMaximumVersion=4.99
 description=Morphological Spatial Pattern Analysis
-version=2.2.0
+version=2.2.1
 author=Peter Vogt; Diego Migliavacca
 email=peter.vogt@ec.europa.eu
 about=Analysis and description of image objects including morphometric features and connecting pathways. Wraps the MSPA 2.4 command line tool from MSPAstandalone. Works in QGIS 3.16 or newer and in QGIS 4. See https://github.com/vogtpet/MSPA-plugins/tree/main/qgis for installation and usage.
@@ -17,4 +17,4 @@ icon=icon.png
 experimental=False
 deprecated=False
 
-changelog=2.2.0: one plugin for QGIS 3 (Qt5) and QGIS 4 (Qt6). Same MSPA 2.4.1 binaries; Qt5/Qt6 compatible dialog and actions; no compiled Qt resources. 2.1.1: Linux aarch64 detection fixed. 2.1.0: first release from the MSPA-plugins repository.
+changelog=2.2.1: use Qt's own file dialogs instead of the native GTK dialog, which crashes QGIS 4 on Fedora 45; the plugin menu entry is now "MSPA". 2.2.0: one plugin for QGIS 3 (Qt5) and QGIS 4 (Qt6). 2.1.1: Linux aarch64 detection fixed. 2.1.0: first release from the MSPA-plugins repository.

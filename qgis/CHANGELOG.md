@@ -5,6 +5,21 @@ and are independent of the MSPA version. The MSPA version wrapped by a release
 is stored in `MSPA_VERSION`; the binary release it is taken from is in
 `MSPA_RELEASE`.
 
+## [2.2.1] - 2026-11-26
+
+### Fixed
+
+* QGIS 4 on Fedora 45 crashed when the input image was selected: the native
+  GTK file dialog failed while loading its theme icons (`glycin`/`bwrap`,
+  "Cannot allocate memory") and aborted QGIS. The plugin now uses Qt's own
+  file dialogs (`DontUseNativeDialog`) for the input image and the output
+  folder, which avoids the GTK dialog entirely.
+
+### Changed
+
+* The plugin menu entry is now **MSPA** (previously "Mspa"), in line with the
+  acronym.
+
 ## [2.2.0] - 2026-11-25
 
 One plugin for QGIS 3 and QGIS 4.

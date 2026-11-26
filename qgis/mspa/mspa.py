@@ -63,11 +63,16 @@ except AttributeError:  # Qt < 5.15
     WINDOW_MODAL = Qt.WindowModal
 
 try:
+    DONT_USE_NATIVE_DIALOG = QFileDialog.Option.DontUseNativeDialog
+except AttributeError:  # Qt < 5.15
+    DONT_USE_NATIVE_DIALOG = QFileDialog.DontUseNativeDialog
+
+try:
     from osgeo import gdal
 except ImportError:
     gdal = None
 
-PLUGIN_VERSION = "2.2.0"
+PLUGIN_VERSION = "2.2.1"
 UPDATE_URL = ("https://raw.githubusercontent.com/vogtpet/MSPA-plugins/"
               "main/qgis/VERSION")
 RELEASE_URL = "https://github.com/vogtpet/MSPA-plugins/releases/tag/qgis-v"
@@ -182,7 +187,7 @@ class Mspa:
         icon_path = os.path.join(self.plugin_dir, 'icon.png')
         self.add_action(
             icon_path,
-            text=self.tr(u'Mspa'),
+            text=self.tr(u'MSPA'),
             callback=self.run,
             parent=self.iface.mainWindow())
 
@@ -230,7 +235,8 @@ class Mspa:
         """Ask for the input image and validate it."""
         filename, _ = QFileDialog.getOpenFileName(
             self.dlg, "Select the MSPA input image", "",
-            "GeoTIFF images (*.tif *.tiff)")
+            "GeoTIFF images (*.tif *.tiff)",
+            options=DONT_USE_NATIVE_DIALOG)
         if not filename:
             return
         self.dlg.showPath.setText(filename)
@@ -472,7 +478,8 @@ class Mspa:
 
         directory = QFileDialog.getExistingDirectory(
             self.dlg, "Select the output folder",
-            os.path.dirname(self._input["path"]))
+            os.path.dirname(self._input["path"]),
+            DONT_USE_NATIVE_DIALOG)
         if not directory:
             return
 
