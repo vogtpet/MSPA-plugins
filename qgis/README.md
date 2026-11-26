@@ -131,8 +131,9 @@ with **Install from ZIP**; the settings and the profile stay unchanged.
   CentOS 7) cannot run the bundled executable.
 * Batch processing of several files is not available; use GTB or GWB for that.
 * Only single-band 8-bit TIFF/GeoTIFF inputs with the GTB encoding are accepted.
-* QGIS 4 support is new. The Qt6 code path is tested with PyQt6 and the
-  plugin's unit checks; please report any issue on the
+* The plugin is tested with QGIS 3 and QGIS 4 on Windows, Linux (x86_64 and
+  aarch64; Ubuntu, Debian, Fedora and openSUSE) and macOS Apple Silicon.
+  Please report any issue on the
   [tracker](https://github.com/vogtpet/MSPA-plugins/issues).
 
 ## Troubleshooting
@@ -153,7 +154,7 @@ with **Install from ZIP**; the settings and the profile stay unchanged.
 * **Linux reports a GLIBC version error** – the distribution is older than
   glibc 2.31. Use a newer distribution, the standalone tool or the R plugin.
 * **MSPA reports an error for a valid-looking image** – export the input as an
-  uncompressed GeoTIFF with the 0/1/2 encoding and try again; the message box
+  uncompressed TIFF with the 0/1/2 encoding and try again; the message box
   shows MSPA's own output.
 
 ## Development
