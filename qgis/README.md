@@ -7,7 +7,7 @@ works in QGIS 3 (Qt5) and QGIS 4 (Qt6).
 
 | | |
 |---|---|
-| **Plugin version** | 2.2.1 |
+| **Plugin version** | 2.2.2 |
 | **MSPA version** | 2.4 (release 2.4.1) |
 | **Host** | QGIS 3.16 or newer, and QGIS 4 |
 
@@ -27,8 +27,8 @@ administrator rights.
 
 ## Installation
 
-1. Download `MSPA-QGIS-2.2.1.zip` from the
-   [QGIS release](https://github.com/vogtpet/MSPA-plugins/releases/tag/qgis-v2.2.1)
+1. Download `MSPA-QGIS-2.2.2.zip` from the
+   [QGIS release](https://github.com/vogtpet/MSPA-plugins/releases/tag/qgis-v2.2.2)
    and verify it against `SHA256SUMS` if you wish.
 2. In QGIS open **Plugins → Manage and Install Plugins…**.
 3. Select **Install from ZIP**, choose the downloaded ZIP file and click
@@ -138,6 +138,9 @@ with **Install from ZIP**; the settings and the profile stay unchanged.
   version 3.16 or newer.
 * **"The MSPA executable is missing"** – the ZIP was not installed completely.
   Reinstall it with **Install from ZIP** instead of copying individual files.
+* **The file dialog crashes QGIS on Linux** – paste the full path into the
+  path field and press Enter; the **Start** button becomes enabled without
+  opening a dialog. Please report the distribution and Qt/QGIS version.
 * **macOS cannot start the bundled executable** after extracting the ZIP with
   Finder: Gatekeeper has quarantined the file. Install the ZIP through QGIS
   (which does not copy the quarantine flag), or remove the flag from the

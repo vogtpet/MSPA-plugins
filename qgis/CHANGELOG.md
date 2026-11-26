@@ -5,6 +5,24 @@ and are independent of the MSPA version. The MSPA version wrapped by a release
 is stored in `MSPA_VERSION`; the binary release it is taken from is in
 `MSPA_RELEASE`.
 
+## [2.2.2] - 2026-11-26
+
+### Fixed
+
+* QGIS 4 on Fedora 45 still crashed when the file dialog was opened, even
+  with `DontUseNativeDialog` and without the GTK platform theme: Qt's file
+  dialog asked the platform icon theme for file and folder icons, and the
+  GTK icon loader (`glycin` via `bwrap`) aborted the process with an
+  out-of-memory error. The input and output dialogs now use an empty
+  `QFileIconProvider`, so no themed icons are requested, in addition to
+  `DontUseNativeDialog` and `DontUseCustomDirectoryIcons`.
+
+### Added
+
+* The path field can be edited directly. Pressing Enter validates the path
+  and enables **Start** without opening a file dialog, as a fallback for
+  platforms where the dialog cannot be used.
+
 ## [2.2.1] - 2026-11-26
 
 ### Fixed
