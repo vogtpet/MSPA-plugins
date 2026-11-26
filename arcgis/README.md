@@ -68,6 +68,12 @@ The input label in the tool states this encoding. Standard `0/1` masks have to
 be recoded to `1/2` (background/foreground) before use; the R plugin
 (`RMSPA`) offers an automatic conversion, the ArcGIS toolbox does not.
 
+The input parameter accepts a raster **layer**: drag the image from the
+ArcGIS **Contents** pane into the tool, or browse for it. The optional
+**Add result to map** parameter (default on) controls whether the result is
+added to the current map/data frame; when it is off, no current ArcGIS Pro
+map is required.
+
 ### Maximum input size
 
 The same limits as RMSPA:
